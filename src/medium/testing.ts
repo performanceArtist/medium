@@ -1,4 +1,4 @@
-import { behavior, Behavior } from '@performance-artist/store';
+import { behavior, Behavior } from '@performance-artist/rx-utils';
 import { merge, ObservableValue } from '../carrier/enclose';
 import { CarrierOutput } from '../carrier/carrier';
 import { Medium } from './medium';

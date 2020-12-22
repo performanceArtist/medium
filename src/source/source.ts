@@ -1,4 +1,4 @@
-import { behavior } from '@performance-artist/store';
+import { behavior } from '@performance-artist/rx-utils';
 import { record } from 'fp-ts';
 import { pipe } from 'fp-ts/lib/pipeable';
 import * as rx from 'rxjs';

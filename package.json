@@ -23,15 +23,13 @@
   "license": "ISC",
   "peerDependencies": {
     "fp-ts": "^2.8.2",
-    "io-ts": "^2.2.10",
     "rxjs": "^6.6.3"
   },
   "devDependencies": {
     "@performance-artist/fp-ts-adt": "^1.0.11",
-    "@performance-artist/store": "^1.0.3",
+    "@performance-artist/rx-utils": "^1.0.3",
     "@types/node": "^12.12.55",
     "fp-ts": "^2.8.2",
-    "io-ts": "^2.2.10",
     "jest": "^26.4.2",
     "prettier": "^1.19.1",
     "rxjs": "^6.6.3",

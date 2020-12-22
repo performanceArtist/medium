@@ -16,7 +16,7 @@
 
 `@performance-artist/fp-ts-adt` provides utilities and adts, most prominent being `selector` for `Reader`-based di and memoized selector creation.
 
-`@performance-artist/store` provides a reactive key-value cache(`store`), which is used to create an interface over the transport layer(e.g. REST or websocket client). It also includes a wrapper over `BehaviorSubject` with monad instance - `behavior`.
+`@performance-artist/rx-utils` provides a wrapper over `BehaviorSubject` with monad instance - `behavior`. It also includes reactive key-value cache(`store`), which is used to create an interface over the transport layer(e.g. REST or websocket client).
 
 `@performance-artist/react-utils` contains hooks and hocs for react.
 

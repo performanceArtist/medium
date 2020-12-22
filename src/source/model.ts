@@ -1,4 +1,4 @@
-import { Behavior } from '@performance-artist/store';
+import { Behavior } from '@performance-artist/rx-utils';
 import * as rx from 'rxjs';
 
 export type AnyReducer<S> = (state: S) => (value: any) => S;
