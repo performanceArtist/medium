@@ -1,4 +1,4 @@
-import { id, map, run } from './medium';
+import { id, map, run, subscribe } from './medium';
 import { combine } from './combine';
 import { withMedium, makeHistory } from './testing';
 
@@ -7,6 +7,7 @@ export const medium = {
   map,
   combine,
   run,
+  subscribe,
 };
 
 export const test = {

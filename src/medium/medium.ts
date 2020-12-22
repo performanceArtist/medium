@@ -12,6 +12,7 @@ import {
   MapOutput,
 } from '../carrier/carrier';
 import { enclose, merge } from '../carrier/enclose';
+import { flow } from 'fp-ts/lib/function';
 
 export type Medium<E, A> = Selector<E, Carrier<E, A>>;
 type MediumSource<E extends {}> = {
@@ -57,6 +58,7 @@ export const map = <D, A, B extends MapOutput>(
     })),
   );
 
-export const run = <E>(deps: E) => <A extends CarrierOutput>(
-  m: Medium<E, A>,
-) => pipe(m.run(deps), merge, enclose);
+export const subscribe = flow(merge, enclose);
+
+export const run = <E>(deps: E) => <A extends CarrierOutput>(m: Medium<E, A>) =>
+  pipe(m.run(deps), subscribe);

@@ -59,3 +59,11 @@ const subscription = pipe(
   todoMedium,
   medium.run({ todoApi: makeTodoApi(), todoSource: makeTodoSource() }),
 );
+
+// an alternative way to do it(resolve dependencies, then subscribe)
+// medium.run is just an alias for this
+const resolved = todoMedium.run({
+  todoApi: makeTodoApi(),
+  todoSource: makeTodoSource(),
+});
+const subscription1 = medium.subscribe(resolved);

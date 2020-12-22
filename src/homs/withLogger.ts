@@ -13,9 +13,9 @@ type WithLoggerDeps = {
 };
 export const withLogger = <A extends CarrierOutput>(
   log: (value: ObservableValue<A[keyof A]>) => void,
-) => <E extends {}>(e: Medium<E, A>) =>
+) => <E extends {}>(m: Medium<E, A>) =>
   medium.map(
-    medium.combine(e, medium.id<WithLoggerDeps>()('logActive')),
+    medium.combine(m, medium.id<WithLoggerDeps>()('logActive')),
     (deps, _, [mediumValue]) => {
       const { logActive } = deps;
 
