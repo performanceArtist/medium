@@ -3,9 +3,9 @@ import { Ray, RayPayload } from '../ray/ray';
 import { AnyAction, Source } from '../source/model';
 import { fromCreator } from '../source/utils';
 import { ObservableValue } from './enclose';
-import { Any } from 'ts-toolbelt';
 import { pipe } from 'fp-ts/lib/pipeable';
 import { record } from 'fp-ts';
+import { Compute } from '../utils';
 
 export type CarrierAction<E extends string = string> =
   | AnyAction
@@ -33,7 +33,7 @@ export type ApplyRayType<B extends MapOutput> = {
 
 export const applyRayType = <A extends MapOutput>(
   a: A,
-): Any.Compute<ApplyRayType<A>, 'flat'> =>
+): Compute<ApplyRayType<A>> =>
   pipe(
     a,
     record.mapWithIndex((key, value) =>
@@ -45,7 +45,7 @@ export const fromSources = <S extends Source<any, any>[]>(...sources: S) => <
   R extends MapOutput
 >(
   f: (sources: S, on: ReturnType<typeof fromCreator>) => R,
-): Carrier<S, Any.Compute<ApplyRayType<R>, 'flat'>> => ({
+): Carrier<S, Compute<ApplyRayType<R>>> => ({
   type: 'carrier',
   sources,
   reflection: action$ =>

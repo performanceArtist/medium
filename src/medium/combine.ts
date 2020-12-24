@@ -1,33 +1,33 @@
 import { Carrier } from '../carrier/carrier';
 import { Medium } from './medium';
-import { Any } from 'ts-toolbelt';
+import { Compute } from '../utils';
 import { pipe } from 'fp-ts/lib/pipeable';
 import { selector } from '@performance-artist/fp-ts-adt';
 
 type Combine = {
   <A, RA, R>(a: Medium<A, RA>): Medium<A, [RA]>;
   <A, RA, B, RB, R>(a: Medium<A, RA>, b: Medium<B, RB>): Medium<
-    Any.Compute<A & B, 'flat'>,
+    Compute<A & B>,
     [RA, RB]
   >;
   <A, RA, B, RB, C, RC>(
     a: Medium<A, RA>,
     b: Medium<B, RB>,
     c: Medium<C, RC>,
-  ): Medium<Any.Compute<A & B & C, 'flat'>, [RA, RB, RC]>;
+  ): Medium<Compute<A & B & C>, [RA, RB, RC]>;
   <A, RA, B, RB, C, RC, D, RD>(
     a: Medium<A, RA>,
     b: Medium<B, RB>,
     c: Medium<C, RC>,
     d: Medium<D, RD>,
-  ): Medium<Any.Compute<A & B & C & D, 'flat'>, [RA, RB, RC, RD]>;
+  ): Medium<Compute<A & B & C & D>, [RA, RB, RC, RD]>;
   <A, RA, B, RB, C, RC, D, RD, E, RE>(
     a: Medium<A, RA>,
     b: Medium<B, RB>,
     c: Medium<C, RC>,
     d: Medium<D, RD>,
     e: Medium<E, RE>,
-  ): Medium<Any.Compute<A & B & C & D & E, 'flat'>, [RA, RB, RC, RD, RE]>;
+  ): Medium<Compute<A & B & C & D & E>, [RA, RB, RC, RD, RE]>;
   <A, RA, B, RB, C, RC, D, RD, E, RE, F, RF>(
     a: Medium<A, RA>,
     b: Medium<B, RB>,
@@ -36,7 +36,7 @@ type Combine = {
     e: Medium<E, RE>,
     f: Medium<F, RF>,
   ): Medium<
-    Any.Compute<A & B & C & D & E & F, 'flat'>,
+    Compute<A & B & C & D & E & F>,
     [RA, RB, RC, RD, RE, RF]
   >;
   <A, RA, B, RB, C, RC, D, RD, E, RE, F, RF, G, RG>(
@@ -48,7 +48,7 @@ type Combine = {
     f: Medium<F, RF>,
     g: Medium<G, RG>,
   ): Medium<
-    Any.Compute<A & B & C & D & E & F & G, 'flat'>,
+    Compute<A & B & C & D & E & F & G>,
     [RA, RB, RC, RD, RE, RF, RG]
   >;
 };

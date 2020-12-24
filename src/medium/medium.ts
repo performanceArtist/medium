@@ -3,7 +3,7 @@ import { AllKeys } from '@performance-artist/fp-ts-adt/dist/utils';
 import { pipe } from 'fp-ts/lib/pipeable';
 import { Source } from '../source/model';
 import { fromCreator } from '../source/utils';
-import { Any } from 'ts-toolbelt';
+import { Compute } from '../utils';
 import {
   ApplyRayType,
   applyRayType,
@@ -17,7 +17,7 @@ import { flow } from 'fp-ts/lib/function';
 export type Medium<E, A> = Selector<E, Carrier<E, A>>;
 type MediumSource<E extends {}> = {
   [key in keyof E]: E[key] extends Source<any, any>
-    ? Any.Compute<Pick<E[key], 'create' | 'state'>, 'flat'>
+    ? Compute<Pick<E[key], 'create' | 'state'>>
     : E[key];
 };
 export type AnyMedium = Medium<{}, CarrierOutput>;
@@ -40,11 +40,11 @@ export const id = <D extends Record<string, any>>() => <
 export const map = <D, A, B extends MapOutput>(
   e: Medium<D, A>,
   f: (
-    deps: Any.Compute<MediumSource<D>, 'flat'>,
+    deps: Compute<MediumSource<D>>,
     on: ReturnType<typeof fromCreator>,
     a: A,
   ) => B,
-): Medium<D, Any.Compute<ApplyRayType<B>, 'flat'>> =>
+): Medium<D, Compute<ApplyRayType<B>>> =>
   pipe(
     e,
     selector.map(a => ({
