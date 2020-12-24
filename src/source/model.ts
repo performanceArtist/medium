@@ -57,3 +57,12 @@ export type Source<S, A extends ActionPack<S, any>> = {
   emit: (a: AnyAction) => void;
   action$: rx.Observable<AnyAction>;
 };
+
+export type ToReducerMap<S, A extends object> = {
+  [key in keyof A]: (state: S) => (value: A[key]) => S;
+};
+
+export type SourceOf<S, A extends object> = Source<
+  S,
+  ActionPack<S, ToReducerMap<S, A>>
+>;
