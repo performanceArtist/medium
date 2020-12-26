@@ -2,8 +2,8 @@ import { medium, ray } from '../../src';
 import { pipe } from 'fp-ts/lib/pipeable';
 import * as rxo from 'rxjs/operators';
 import { array, option } from 'fp-ts';
-import { makeTodoSource, TodoSource } from './source';
-import { TodoApi, makeTodoApi } from './api';
+import { makeTodoSource, TodoSource } from './todo.source';
+import { TodoApi, makeTodoApi } from './todo.api';
 
 type Deps = {
   todoApi: TodoApi;
