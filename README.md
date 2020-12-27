@@ -52,9 +52,13 @@ It goes without saying that if you use `tap` instead of `ray` or `Source` action
 
 ### In this repo
 
-Basic example: `examples/basic`.
+Basic todo example: `examples/basic`.
 
-`map`, `combine` examples, as well as higher-order medium example: `examples/transformation`.
+Higher order medium examples: `examples/hom`
+
+`map` examples: `examples/map`.
+
+The advanced `chain` example: `examples/chain`.
 
 ### Todo
 

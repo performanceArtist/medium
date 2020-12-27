@@ -1,10 +1,10 @@
 import { pipe } from 'fp-ts/lib/pipeable';
 import { medium, ray } from '../../src';
-import { todoMedium } from '../basic/medium';
+import { todoMedium } from '../basic/todo.medium';
 import * as rxo from 'rxjs/operators';
 import { option } from 'fp-ts';
-import { makeTodoApi } from '../basic/api';
-import { makeTodoSource } from '../basic/source';
+import { makeTodoApi } from '../basic/todo.api';
+import { makeTodoSource } from '../basic/todo.source';
 
 const withErrorReport = medium.map(todoMedium, (deps, on, value) => {
   const { todoSource } = deps;

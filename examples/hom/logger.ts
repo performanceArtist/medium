@@ -1,8 +1,8 @@
 import { pipe } from 'fp-ts/lib/pipeable';
 import { medium } from '../../src';
-import { todoMedium } from '../basic/medium';
-import { makeTodoApi } from '../basic/api';
-import { makeTodoSource } from '../basic/source';
+import { todoMedium } from '../basic/todo.medium';
+import { makeTodoApi } from '../basic/todo.api';
+import { makeTodoSource } from '../basic/todo.source';
 import { withLogger } from '../../src/homs';
 
 // hom(s) - Higher Order Medium(s)

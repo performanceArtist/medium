@@ -5,6 +5,7 @@ import { combineActions, isSource } from '../source/utils';
 import { isRay } from '../ray/ray';
 import { Carrier, CarrierAction, CarrierOutput } from './carrier';
 import * as rx from 'rxjs';
+import * as rxo from 'rxjs/operators';
 
 const makeDispatch = (sources: Source<any, any>[]) => (
   action: CarrierAction,
@@ -16,6 +17,15 @@ export type ObservableValue<
   E extends rx.Observable<any>
 > = E extends rx.Observable<infer V> ? V : never;
 
+export const mergeOutput = <V extends CarrierOutput>(
+  vs: V,
+): rx.Observable<ObservableValue<V[keyof V]>> =>
+  pipe(
+    vs,
+    Object.values,
+    array.reduce(rx.EMPTY, (acc, cur) => rx.merge(acc, cur)),
+  );
+
 export type MergedCarrier<A extends CarrierOutput> = {
   dispatch: (action: CarrierAction) => void;
   output$: rx.Observable<ObservableValue<A[keyof A]>>;
@@ -26,8 +36,7 @@ export const merge = <E, A extends CarrierOutput>(
   const sources = pipe(carrier.sources, Object.values, array.filter(isSource));
   const output$ = pipe(
     carrier.reflection(combineActions(...sources)),
-    Object.values,
-    array.reduce(rx.EMPTY, (acc, cur) => rx.merge(acc, cur)),
+    mergeOutput,
   );
 
   return {
@@ -35,6 +44,17 @@ export const merge = <E, A extends CarrierOutput>(
     dispatch: makeDispatch(sources),
   };
 };
+
+export const toObservable = <E, A extends CarrierOutput>(
+  carrier: Carrier<E, A>,
+): rx.Observable<ObservableValue<A[keyof A]>> =>
+  pipe(carrier, merge, ({ output$, dispatch }) =>
+    pipe(
+      output$,
+      rxo.tap(dispatch as any),
+      rxo.shareReplay({ bufferSize: 1, refCount: true }),
+    ),
+  );
 
 export const enclose = <A extends CarrierOutput>(carrier: MergedCarrier<A>) =>
   carrier.output$.subscribe(carrier.dispatch);
