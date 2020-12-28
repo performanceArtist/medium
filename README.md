@@ -34,27 +34,29 @@ Full example of the proposed architecture and these packages at work can be foun
 
 ### Medium
 
-`Medium` is the main abstraction for side effect handling. The name alludes to refraction - in other words `Medium` is an environment that bends/transforms the incoming "sources" to a new shape. The "sources" can be user events, triggered by `Source` or some external data streams, like socket messages.
+`Medium` is an abstraction for side effect handling. The name alludes to refraction - in other words `Medium` is an environment that bends/transforms the incoming "sources" to a new shape. The "sources" can be user events, triggered by `Source` or some external data streams, like socket messages.
 
-The main idea behind `Medium` is presentation of side-effects as actions. It is a lot like `Epic` from `redux-observable`: actions in - actions out. There are two types of actions - those that are defined in `Source` and those that are created by `Medium`(usually in response to `Source`). The medium action is represented by `Ray`, which is an adt not unlike `Action`, used in `Source`. The conceptual difference between `Ray` and `Action` is their origin - i.e. `Ray` can only be produced by `Medium`, while `Action` is definitely produced by view(and optionally by `Medium`). Implementation-wise `Ray`s aren't dispatched to `Source`s as opposed to `Action`s - since `Ray` presence already indicates that there is an effect associated with its payload.
+The main idea behind `Medium` is presentation of side-effects as actions. It is a lot like `Epic` from `redux-observable`: actions in - actions out. The medium action is represented by `Ray`, which is an adt not unlike `Action`, used in `Source`. The conceptual difference between `Ray` and `Action` is their origin - i.e. `Ray` can only be produced by `Medium`, while `Action` is produced by view.
 
-While it is possible to define all actions in `Source` and simply return them in `Medium`, this is strongly discouraged. If `Source` defines actions emitted only by `Medium`, it has both knowledge of `Medium`'s and view's needs. Actions can easily become coupled both in `Source` and in `Medium`, which adds unnecessary complexity. This choice also has a potential of polluting `Source` with actions that aren't used in view and therefore have to be looked up in `Medium`s. From the developer's perspective it could raise a lot more questions - like whether a certain action should be in `Source` or `Medium`.
+The only `Medium` "rules" are:
 
-The other important recommendation is to only have one effect per observable in `Medium`'s and never use `tap`. Typical flow should look something like this:
+1. Have one effect per observable, which is the last transformation of a stream's value.
 
-    filter source action ->
-    map data needed to create `Source`'s action or run a side effect ->
+2. Never use `tap`(except for debugging purposes).
+
+Typical flow should look something like this:
+
+    filter source action/external data ->
+    map data needed to run a side effect ->
     return an action with the mapped data as a payload
 
-It goes without saying that if you use `tap` instead of `ray` or `Source` action creators, the stream would not produce an action and there would be no way to track the side effect. Note that `Medium`'s typings enforce that you always return an action in each field of the resulting object. Returning an object of a certain shape is also encoded for consistency and ease of modification.
+It goes without saying that if you use `tap` instead of `ray`, the stream would not produce an action and there would be no way to track the side effect. Note that `Medium`'s typings enforce that you always return an observable with a `Ray` action in each field of the resulting object. Returning an object is encoded for consistency and ease of modification.
 
 ## Examples
 
 ### In this repo
 
 Basic todo example: `examples/basic`.
-
-Higher order medium examples: `examples/hom`
 
 `map` examples: `examples/map`.
 

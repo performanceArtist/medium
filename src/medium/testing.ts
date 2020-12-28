@@ -1,5 +1,5 @@
 import { behavior, Behavior } from '@performance-artist/rx-utils';
-import { merge, ObservableValue } from '../carrier/enclose';
+import { merge, ObservableValue } from '../carrier/merge';
 import { CarrierOutput } from '../carrier/carrier';
 import { Medium } from './medium';
 import { ray } from '../ray';
@@ -25,12 +25,7 @@ export const withMedium = <E, A extends CarrierOutput>(
   test: (
     deps: E,
     history: History<ObservableValue<A[keyof A]>[]>,
-    output: <
-      T extends Extract<
-        ObservableValue<A[keyof A]>,
-        Ray<string, unknown>
-      >['type']
-    >(
+    output: <T extends ObservableValue<A[keyof A]>['type']>(
       type: T,
     ) => <
       P extends Extract<ObservableValue<A[keyof A]>, { type: T }>['payload']
@@ -42,11 +37,10 @@ export const withMedium = <E, A extends CarrierOutput>(
   const history = makeHistory([] as ObservableValue<A[keyof A]>[]);
   const deps = makeDeps();
   const resolved = medium.run(deps);
-  const { dispatch, output$ } = merge(resolved);
+  const output$ = merge(resolved);
 
   const sub = output$.subscribe(e => {
     history.modify(history => history.concat(e as ObservableValue<A[keyof A]>));
-    dispatch(e);
   });
   test(deps, history, ray.create);
   sub.unsubscribe();

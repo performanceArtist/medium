@@ -41,7 +41,7 @@ export const tourEnvMedium = medium.map(
     // Carrier "carries" over the dependencies +
     // a function that takes a stream of actions and returns an object with streams of effects.
     // carrier.mergeOutput merges the object streams to create one stream of effects,
-    // which we can "chain", using operators like switchMap.
+    // which can be "chained", using operators like switchMap.
     const tourMedium$ = pipe(
       userInfo.isFirstLogin$,
       rxo.filter(identity),
@@ -89,7 +89,7 @@ export const tourSymbolEnvMedium = pipe(
             tourMedium.run({
               symbol,
             }),
-            carrier.toObservable,
+            carrier.merge,
           ),
         ),
       );

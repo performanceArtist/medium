@@ -2,14 +2,12 @@ import * as rx from 'rxjs';
 import { Ray, RayPayload } from '../ray/ray';
 import { AnyAction, Source } from '../source/model';
 import { fromCreator } from '../source/utils';
-import { ObservableValue } from './enclose';
+import { ObservableValue } from './merge';
 import { pipe } from 'fp-ts/lib/pipeable';
 import { record } from 'fp-ts';
 import { Compute } from '../utils';
 
-export type CarrierAction<E extends string = string> =
-  | AnyAction
-  | Ray<E, unknown>;
+export type CarrierAction<E extends string = string> = Ray<E, unknown>;
 export type CarrierOutput = Record<string, rx.Observable<CarrierAction>>;
 export type Carrier<E, A> = {
   type: 'carrier';
@@ -54,7 +52,7 @@ export const fromSources = <S extends Source<any, any>[]>(...sources: S) => <
 
 export type CarrierSource<E extends {}> = {
   [key in keyof E]: E[key] extends Source<any, any>
-    ? Compute<Pick<E[key], 'create' | 'state'>>
+    ? Compute<Pick<E[key], 'create' | 'state' | 'reduce'>>
     : E[key];
 };
 
@@ -73,4 +71,13 @@ export const map = <D, A, B extends MapOutput>(
       f(e.sources as any, fromCreator(action$), e.reflection(action$)),
       applyRayType,
     ),
+});
+
+export const from = <E, A>(
+  sources: E,
+  reflection: (action$: rx.Observable<AnyAction>) => A,
+): Carrier<E, A> => ({
+  type: 'carrier',
+  sources,
+  reflection,
 });
