@@ -1,6 +1,11 @@
 import { id, map, run, subscribe } from './medium';
 import { combine } from './combine';
-import { withMedium, makeHistory } from './testing';
+import {
+  withMedium,
+  makeHistory,
+  unorderedEqual,
+  unorderedEqualStrict,
+} from './testing';
 
 export const medium = {
   id,
@@ -13,4 +18,6 @@ export const medium = {
 export const test = {
   withMedium,
   makeHistory,
+  unorderedEqual,
+  unorderedEqualStrict,
 };
