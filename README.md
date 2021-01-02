@@ -2,6 +2,20 @@
 
 `Medium` is a state management library based on `rxjs`. The main goal is to provide a scalable and flexible solution to develop complex frontend apps.
 
+## Installation
+
+The library uses two more packages that should be installed as peer deps:
+
+```shell
+npm install @performance-artist/medium @performance-artist/fp-ts-adt @performance-artist/rx-utils
+```
+
+There is also a react package, which has no direct bindings to the lib, but provides all necessary utilities and hooks for react integration:
+
+```shell
+npm install @performance-artist/react-utils
+```
+
 ## Features
 
 1. Traceable side effects for better testing and debugging. Reactive programming combined with predictability and simplicity of `redux` approach(eschewing the global state).
@@ -12,7 +26,7 @@
 
 4. Rich type information.
 
-5. Integration with `react` and `fp-ts`. Moreover, this library is a part of a group of packages, which are meant to be used together to form a complete set of tools for frontend development(barring ui) with `react`, `rxjs` and `fp-ts`:
+5. Integration with `react` and `fp-ts`. Also, as mentioned, this library is a part of a group of packages, which are meant to be used together to form a complete set of tools for frontend development(barring ui) with `react`, `rxjs` and `fp-ts`:
 
 `@performance-artist/fp-ts-adt` provides utilities and adts, most prominent being `selector` for `Reader`-based di and memoized selector creation.
 
@@ -73,6 +87,12 @@ Demonstrates how to use this library with `react`. Very bare-bones - no architec
 [Repo](https://github.com/performanceArtist/medium-chat)
 
 More involved case with a backend and a basic chat functionality.
+
+### Async joyride
+
+[Repo](https://github.com/performanceArtist/async-joyride) + an [example](https://github.com/performanceArtist/async-joyride-example).
+
+A solution for react-joyride that adds an ability to wait for tour steps to become available.
 
 ## Acknowledgements
 

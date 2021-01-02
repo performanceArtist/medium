@@ -30,7 +30,7 @@ export type ToActions<S, A extends ReducerMap<S>> = {
 };
 
 export type Options = {
-  id: string;
+  id: SourceID;
 };
 
 export type Formatter = {
@@ -38,7 +38,10 @@ export type Formatter = {
   unformat: (tag: string) => string;
 };
 
+export type SourceID = string;
+
 export type ActionPack<S, A extends ReducerMap<S>> = {
+  id: SourceID;
   reduce: A;
   create: ToActions<S, A>;
   formatter: Formatter;
@@ -46,6 +49,7 @@ export type ActionPack<S, A extends ReducerMap<S>> = {
 
 export type Source<S, A extends ActionPack<S, any>> = {
   type: 'source';
+  id: SourceID;
   state: Behavior<S>;
   reduce: A['reduce'];
   create: <K extends keyof A['create']>(key: K) => A['create'][K];
@@ -54,7 +58,6 @@ export type Source<S, A extends ActionPack<S, any>> = {
   ) => Parameters<ReturnType<A['reduce'][K]>>[0] extends void
     ? () => void
     : (payload: Parameters<ReturnType<A['reduce'][K]>>[0]) => void;
-  emit: (a: AnyAction) => void;
   action$: rx.Observable<AnyAction>;
 };
 

@@ -17,10 +17,10 @@ const defaultFormat = (id: string): Formatter => ({
   unformat: tag => tag.split('.')[1],
 });
 
-export const makeActions = <S>(options: Options) => <A extends ReducerMap<S>>(
+export const makeActions = <S>({ id }: Options) => <A extends ReducerMap<S>>(
   actions: A,
 ): ActionPack<S, A> => {
-  const formatter = defaultFormat(options.id);
+  const formatter = defaultFormat(id);
 
   const create = Object.keys(actions).reduce((acc, key) => {
     acc[key] = (payload: any) => ({
@@ -32,12 +32,12 @@ export const makeActions = <S>(options: Options) => <A extends ReducerMap<S>>(
     return acc;
   }, {} as any);
 
-  return { create, formatter, reduce: actions };
+  return { id, create, formatter, reduce: actions };
 };
 
 export const fromActions = <S, A extends ActionPack<S, any>>(
   initialState: S,
-  { create, formatter, reduce }: A,
+  { id, create, formatter, reduce }: A,
 ): Source<S, A> => {
   const state = behavior.of(initialState);
   const actions = new rx.Subject<AnyAction>();
@@ -59,13 +59,7 @@ export const fromActions = <S, A extends ActionPack<S, any>>(
     }
   });
 
-  const has = (action: AnyAction) =>
-    reduce[formatter.unformat(action.type)] != null;
   const emit = actions.next.bind(actions);
-  const maybeEmit = (action: any) => {
-    action && typeof action.type === 'string' && has(action) && emit(action);
-  };
-
   const dispatchers = pipe(
     create,
     record.reduceWithIndex({} as Record<string, Function>, (key, acc) => {
@@ -77,16 +71,18 @@ export const fromActions = <S, A extends ActionPack<S, any>>(
 
   return {
     type: 'source',
+    id,
     state,
     reduce,
     create: key => create[key],
     action$: pipe(actions.asObservable(), shareReplay(1)),
     dispatch: key => dispatchers[key as any] as any,
-    emit: maybeEmit,
   };
 };
 
-export  const create = <S>(id: string, initialState: S) => <A extends ReducerMap<S>>(
+export const create = <S>(id: string, initialState: S) => <
+  A extends ReducerMap<S>
+>(
   actions: A,
 ) =>
   fromActions(
