@@ -1,6 +1,6 @@
 {
   "name": "@performance-artist/medium",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Reactive state manager",
   "keywords": [
     "rxjs",
