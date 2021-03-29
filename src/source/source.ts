@@ -2,7 +2,6 @@ import { behavior } from '@performance-artist/rx-utils';
 import { record } from 'fp-ts';
 import { pipe } from 'fp-ts/lib/pipeable';
 import * as rx from 'rxjs';
-import { shareReplay } from 'rxjs/operators';
 import {
   ActionPack,
   AnyAction,
@@ -41,7 +40,9 @@ export const fromActions = <S, A extends ActionPack<S, any>>(
 ): Source<S, A> => {
   const state = behavior.of(initialState);
   const actions = new rx.Subject<AnyAction>();
-  actions.subscribe((action: any) => {
+  const emit = actions.next.bind(actions);
+  const action$ = actions.asObservable();
+  action$.subscribe((action: any) => {
     const key = formatter.unformat(action.type);
     if (action.payload != null && reduce[key]) {
       try {
@@ -59,7 +60,6 @@ export const fromActions = <S, A extends ActionPack<S, any>>(
     }
   });
 
-  const emit = actions.next.bind(actions);
   const dispatchers = pipe(
     create,
     record.reduceWithIndex({} as Record<string, Function>, (key, acc) => {
@@ -75,7 +75,7 @@ export const fromActions = <S, A extends ActionPack<S, any>>(
     state,
     reduce,
     create: (key) => create[key],
-    action$: pipe(actions.asObservable(), shareReplay(1)),
+    action$,
     dispatch: (key) => dispatchers[key as any] as any,
   };
 };
