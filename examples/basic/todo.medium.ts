@@ -25,8 +25,8 @@ export const todoMedium = medium.map(
       on(todoSource.create('getTodos')),
       rxo.switchMap(todoApi.getTodos),
       // create an effect representation
-      effect.tag('setTodos', todos =>
-        todoSource.state.modify(state => ({ ...state, todos })),
+      effect.tag('setTodos', (todos) =>
+        todoSource.state.modify((state) => ({ ...state, todos })),
       ),
     );
 
@@ -37,10 +37,10 @@ export const todoMedium = medium.map(
         pipe(
           state.todos,
           option.fromEither,
-          option.chain(array.findFirst(todo => todo.id === id)),
+          option.chain(array.findFirst((todo) => todo.id === id)),
         ),
       ),
-      effect.tag('updateTodo', todo => {
+      effect.tag('updateTodo', (todo) => {
         if (option.isSome(todo)) {
           todoApi.updateTodo(todo.value);
         }

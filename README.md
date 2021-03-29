@@ -40,31 +40,89 @@ Full example of the proposed architecture and these packages at work can be foun
 
 ### Source
 
-`Source` is a representation of the view's state and events. So it is a "source" of them. It should contain everything view needs for initial rendering + a set of events, which are fired upon user interaction. Events are represented by actions, which either change the state or not(in this case they're aliased by `source.input`). There are two important notes:
+`Source` is a representation of the view's state and events. So it is a "source" of them. It should contain everything view needs for initial rendering as its state + a set of events, which are fired upon user interaction. Events are represented by actions, which can either change the state or keep it the same, representing an event(in this case they're aliased by `source.input`). There are two important notes:
 
 1. View should only interact with `Source` through actions(using `dispatch` function provided by `Source`), not modify its state directly. Actions should be as simple as possible - ideally only basic set and update operations.
 
 2. The actions defined in `Source` should be utilized by view. There should not be any actions that aren't dispatched by view in one way or another.
 
+3. `Source` should not have any external dependencies and should not do any side effects, such as api calls. If a state change requires an additional dependency, action should be kept empty(as an event).
+
 ### Medium
 
 `Medium` is an abstraction for side effect handling. The name alludes to refraction - in other words `Medium` is an environment that bends/transforms the incoming "sources" to a new shape. The "sources" can be user events, triggered by `Source` or some external data streams, like socket messages.
 
-The main idea behind `Medium` is presentation of side-effects as actions. It is a lot like `Epic` from `redux-observable`: actions in - actions out. The medium action is represented by `Ray`, which is an adt not unlike `Action`, used in `Source`. The conceptual difference between `Ray` and `Action` is their origin - i.e. `Ray` can only be produced by `Medium`, while `Action` is produced by view.
+The main idea behind `Medium` is presentation of side-effects as actions. It is a lot like `Epic` from `redux-observable`: actions in - actions out.
 
-The only `Medium` "rules" are:
+`Medium` returns an object of `Effect`s. The whole purpose of `Medium` is to produce `Effect`s from observables. Any side effect triggered by observable(e.g. `Source` state modification) should become an `Effect`. By no circumstances should `tap` be used for this purpose.
 
-1. Have one effect per observable, which is the last transformation of a stream's value.
+This
 
-2. Never use `tap`(except for debugging purposes).
+```ts
+const logNumber$ = pipe(rx.of(0), rxo.tap(console.log));
+```
 
-Typical flow should look something like this:
+becomes this
 
-    filter source action/external data ->
+```ts
+const logNumber = pipe(rx.of(0), effect.tag('logNumber', console.log));
+```
+
+Typical flow inside of a `Medium` looks as the following:
+
+    filter `Source` action/external data ->
     map data needed to run a side effect ->
-    return an action with the mapped data as a payload
+    create an `Effect` and return it as a part of the result object
 
-It goes without saying that if you use `tap` instead of `ray`, the stream would not produce an action and there would be no way to track the side effect. Note that `Medium`'s typings enforce that you always return an observable with a `Ray` action in each field of the resulting object. Returning an object is encoded for consistency and ease of modification.
+`Medium` also has a dependency injection support. This is done so side effects can be mocked, by passing mocks in tests.
+
+### Effect
+
+`Effect` is an abstraction that represents an input stream, associated with an effectful function and a tag. Every time the stream emits a value, the function receives it and produces a side effect, such as a `Source` state modification or any other external call.
+
+There are two constraints enforced by the abstraction. The first one is effect immutability and non-composability - once an `Effect` is created, neither its tag, nor its worker function can be modified or discarded. Each `Effect` should be distinct and have one responsibility, reflected by its name(tag).
+
+There are three basic `Effect` operations:
+
+1. Creation(`effect.tag`). To create an `Effect`, you need a stream of values(such as user events), a unique(in the `Medium` scope) tag, and a function to execute a side effect.
+
+```ts
+const clickLog = pipe(
+  rx.from(['click1', 'click2']),
+  effect.tag('clickLog', (data) => console.log('click', data)),
+);
+```
+
+2. Modification(`effect.transform`). The only way to modify `Effect` is to alter its input stream with `transform` function. The stream type should stay the same and the result of modification should become a substitute for the input `Effect`. If both input and output effects are needed(i.e. the output is not a substitute for the input), `effect.branch` should be used instead.
+
+```ts
+const firstClickLog = pipe(clickLog, effect.transform(rxo.first()));
+```
+
+3. Deriving(`effect.branch`/`effect.branches`). The cases that aren't accounted for with `transform` should be handled with `branch` or `branches`. The function argument allows any observable transformations, as long as the result is an another `Effect`. Input and output `Effect`s are independent in a sense that they only share the same input stream, which is further modified in the output `Effect`. These functions mainly exist for extensibility purposes - if you need to create a new `Medium` from an existing one. Otherwise you can achieve the same functionality inside of a `Medium` by simply moving an input stream to a separate variable.
+
+```ts
+// imagine we only have an access to clickLog,
+// but not its input stream(rx.from(['click1', 'click2']))
+const fetchOnClick = pipe(
+  clickLog,
+  effect.branch(
+    effect.tag('fetchOnClick', (clickValue) =>
+      console.log('fetch', clickValue),
+    ),
+  ),
+);
+
+// same as above, but multiple `Effect`s can be passed
+const fetchOnClicks = effect.branches([clickLog], ([click$]) =>
+  pipe(
+    click$,
+    effect.tag('fetchOnClick', (clickValue) =>
+      console.log('fetch', clickValue),
+    ),
+  ),
+);
+```
 
 ## Examples
 
@@ -72,9 +130,9 @@ It goes without saying that if you use `tap` instead of `ray`, the stream would 
 
 Basic todo example: `examples/basic`.
 
-`map` examples: `examples/map`.
+`transform` example: `examples/withReports`.
 
-The advanced `chain` example: `examples/chain`.
+The advanced `tour` example: `examples/tour`.
 
 ### Todo
 
