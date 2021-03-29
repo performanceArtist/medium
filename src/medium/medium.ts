@@ -3,19 +3,13 @@ import { AllKeys } from '@performance-artist/fp-ts-adt/dist/utils';
 import { pipe } from 'fp-ts/lib/pipeable';
 import { fromCreator } from '../source/utils';
 import { Compute } from '../utils';
-import {
-  ApplyRayType,
-  Carrier,
-  CarrierOutput,
-  CarrierSource,
-  MapOutput,
-  map as carrierMap,
-} from '../carrier/carrier';
+import { Carrier, CarrierSource, map as carrierMap } from '../carrier/carrier';
 import { merge } from '../carrier/merge';
 import { flow } from 'fp-ts/lib/function';
+import { EffectTree } from '../effect/effect';
 
 export type Medium<E, A> = Selector<E, Carrier<E, A>>;
-export type AnyMedium = Medium<{}, CarrierOutput>;
+export type AnyMedium = Medium<{}, EffectTree>;
 export type MediumValue<E> = E extends Medium<any, infer A> ? A : never;
 
 export const id = <D extends Record<string, any>>() => <
@@ -25,27 +19,27 @@ export const id = <D extends Record<string, any>>() => <
 ): Medium<AllKeys<D, K>, {}> =>
   pipe(
     selector.keys<D>()(...keys),
-    selector.map(sources => ({
+    selector.map((sources) => ({
       type: 'carrier',
       sources,
-      reflection: action$ => ({}),
+      reflection: (action$) => ({}),
     })),
   );
 
-export const map = <D, A, B extends MapOutput>(
+export const map = <D, A, B extends EffectTree>(
   m: Medium<D, A>,
   f: (
     deps: Compute<CarrierSource<D>>,
     on: ReturnType<typeof fromCreator>,
     a: A,
   ) => B,
-): Medium<D, Compute<ApplyRayType<B>>> =>
+): Medium<D, B> =>
   pipe(
     m,
-    selector.map(c => carrierMap(c, f)),
+    selector.map((c) => carrierMap(c, f)),
   );
 
-export const subscribe = flow(merge, output$ => output$.subscribe());
+export const subscribe = flow(merge, (output$) => output$.subscribe());
 
-export const run = <E>(deps: E) => <A extends CarrierOutput>(m: Medium<E, A>) =>
+export const run = <E>(deps: E) => <A extends EffectTree>(m: Medium<E, A>) =>
   pipe(m.run(deps), subscribe);

@@ -1,5 +1,5 @@
 import { fromSources, map, from } from './carrier';
-import { mergeOutput, merge } from './merge';
+import { mergeOutput, merge, unwrap } from './merge';
 
 export const carrier = {
   fromSources,
@@ -7,4 +7,5 @@ export const carrier = {
   mergeOutput,
   map,
   from,
+  unwrap,
 };

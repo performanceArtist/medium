@@ -1,11 +1,11 @@
 import { behavior, Behavior } from '@performance-artist/rx-utils';
 import { merge, ObservableValue } from '../carrier/merge';
-import { CarrierOutput } from '../carrier/carrier';
 import { Medium } from './medium';
 import { ray } from '../ray';
 import { Ray } from '../ray/ray';
 import { pipe } from 'fp-ts/lib/pipeable';
 import { array, option } from 'fp-ts';
+import { EffectTree } from '../effect/effect';
 
 export type History<A> = Behavior<A> & { take: () => A };
 
@@ -20,29 +20,32 @@ export const makeHistory = <A>(initial: A): History<A> => {
   return { ...b, take };
 };
 
-export const withMedium = <E, A extends CarrierOutput>(
-  medium: Medium<E, A>,
-) => (
+export const withMedium = <E, A extends EffectTree>(medium: Medium<E, A>) => (
   makeDeps: () => E,
   test: (
     deps: E,
-    history: History<ObservableValue<A[keyof A]>[]>,
-    output: <T extends ObservableValue<A[keyof A]>['type']>(
+    history: History<ObservableValue<A[keyof A]['value']>[]>,
+    output: <T extends ObservableValue<A[keyof A]['value']>['type']>(
       type: T,
     ) => <
-      P extends Extract<ObservableValue<A[keyof A]>, { type: T }>['payload']
+      P extends Extract<
+        ObservableValue<A[keyof A]['value']>,
+        { type: T }
+      >['payload']
     >(
       payload: P,
     ) => Ray<T, P>,
   ) => void,
 ) => () => {
-  const history = makeHistory([] as ObservableValue<A[keyof A]>[]);
+  const history = makeHistory([] as ObservableValue<A[keyof A]['value']>[]);
   const deps = makeDeps();
   const resolved = medium.run(deps);
   const output$ = merge(resolved);
 
-  const sub = output$.subscribe(e => {
-    history.modify(history => history.concat(e as ObservableValue<A[keyof A]>));
+  const sub = output$.subscribe((e) => {
+    history.modify((history) =>
+      history.concat(e as ObservableValue<A[keyof A]['value']>),
+    );
   });
   test(deps, history, ray.create);
   sub.unsubscribe();
@@ -63,7 +66,7 @@ export const unorderedEqual = (check: (a: unknown, b: unknown) => boolean) => <
         acc &&
         pipe(
           b,
-          array.findFirst(b => check(b, cur)),
+          array.findFirst((b) => check(b, cur)),
           option.fold(
             () => false,
             () => true,

@@ -20,7 +20,7 @@ describe('Env', () => {
         expect(history.take()).toStrictEqual([]);
 
         isFirstLogin.next(true);
-        expect(history.take()).toStrictEqual([output('setIsOpen$')(true)]);
+        expect(history.take()).toStrictEqual([output('setIsOpen')(true)]);
       },
     ),
   );
@@ -51,7 +51,7 @@ describe('Symbol env', () => {
         expect(history.take()).toStrictEqual([]);
 
         symbol.next('USD/CAD');
-        expect(history.take()).toStrictEqual([output('setIsOpen$')(true)]);
+        expect(history.take()).toStrictEqual([output('setIsOpen')(true)]);
       },
     ),
   );

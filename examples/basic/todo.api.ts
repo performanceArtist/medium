@@ -3,7 +3,7 @@ import * as rx from 'rxjs';
 
 // api has its own types that may differ from the view's types
 // changes in the view should not affect the api, but changes in the api affect the view
-// conversions(mappings to view types) should be handled by epic or container
+// conversions(mappings to view types) should be handled by container
 export type Todo = {
   id: number;
   text: string;

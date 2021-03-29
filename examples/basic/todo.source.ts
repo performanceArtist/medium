@@ -22,7 +22,7 @@ const initialState: TodoState = {
 };
 
 // There are no reasons I know of not to make sources lazy, as it gives you more flexibility and
-// control over creation. This way you can also create multiple components with the same state and events.
+// control over creation. This way you can also create multiple components with the same state and event shape.
 export const makeTodoSource = () =>
   source.create(
     'todo',

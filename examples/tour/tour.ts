@@ -3,11 +3,9 @@ import { identity } from 'fp-ts/lib/function';
 import { pipe } from 'fp-ts/lib/pipeable';
 import * as rx from 'rxjs';
 import * as rxo from 'rxjs/operators';
-import { carrier, medium, ray } from '../../src';
+import { carrier, medium, effect } from '../../src';
 
 // Consider this case: we want to start an app tour(and run its effects) only in case this is the user's first login.
-// Since the effects of medium are simply observables, we can use chain-like operators(e.g. switchMap) to
-// create an observable that contains the effects of tourMedium inside of the other "env" medium, that controls its lifecycle.
 
 type TourMediumDeps = {
   tour: {
@@ -15,12 +13,12 @@ type TourMediumDeps = {
   };
 };
 
-const tourMedium = medium.map(medium.id<TourMediumDeps>()('tour'), deps => {
+const tourMedium = medium.map(medium.id<TourMediumDeps>()('tour'), (deps) => {
   const { tour } = deps;
 
-  const setIsOpen$ = pipe(rx.of(true), ray.infer(tour.setIsOpen));
+  const setIsOpen = pipe(rx.of(true), effect.tag('setIsOpen', tour.setIsOpen));
 
-  return { setIsOpen$ };
+  return { setIsOpen };
 });
 
 type UserInfo = {
@@ -36,20 +34,21 @@ export const tourEnvMedium = medium.map(
   (deps, _, [tourMedium]) => {
     const { userInfo } = deps;
 
-    // Carrier is an underlying value of the medium.
-    // Medium type is basically Selector<E, Carrier<E, A>>.
-    // Carrier "carries" over the dependencies +
-    // a function that takes a stream of actions and returns an object with streams of effects.
-    // carrier.mergeOutput merges the object streams to create one stream of effects,
-    // which can be "chained", using operators like switchMap.
-    const tourMedium$ = pipe(
-      userInfo.isFirstLogin$,
-      rxo.filter(identity),
-      rxo.switchMap(() => pipe(tourMedium, carrier.mergeOutput)),
+    // "transform" allows to modify the effect's input stream,
+    // as long as it produces the same payload type
+    const setIsOpen = pipe(
+      tourMedium.setIsOpen,
+      effect.transform((input$) =>
+        pipe(
+          userInfo.isFirstLogin$,
+          rxo.filter(identity),
+          rxo.switchMap(() => input$),
+        ),
+      ),
     );
 
     return {
-      tourMedium$,
+      setIsOpen,
     };
   },
 );
@@ -78,10 +77,10 @@ export const tourSymbolEnvMedium = pipe(
     medium.id<EnvMediumSymbolDeps>()('userInfo', 'symbolProvider'),
   ),
   selector.map(([tourMedium, envMedium]) =>
-    carrier.map(envMedium, deps => {
+    carrier.map(envMedium, (deps) => {
       const { userInfo, symbolProvider } = deps;
 
-      const tourMedium$ = pipe(
+      const tourEffects$ = pipe(
         rx.combineLatest([userInfo.isFirstLogin$, symbolProvider.symbol$]),
         rxo.filter(([isFirstLogin]) => isFirstLogin),
         rxo.switchMap(([_, symbol]) =>
@@ -89,13 +88,21 @@ export const tourSymbolEnvMedium = pipe(
             tourMedium.run({
               symbol,
             }),
+            // uses sources to produce an effect map
             carrier.merge,
           ),
         ),
       );
 
+      const tourStart = pipe(
+        tourEffects$,
+        rxo.filter(e => e.type === 'setIsOpen'),
+        rxo.map((e) => e.payload),
+        effect.tag('setIsOpen', () => {}),
+      );
+
       return {
-        tourMedium$,
+        tourStart,
       };
     }),
   ),

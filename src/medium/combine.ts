@@ -35,10 +35,7 @@ type Combine = {
     d: Medium<D, RD>,
     e: Medium<E, RE>,
     f: Medium<F, RF>,
-  ): Medium<
-    Compute<A & B & C & D & E & F>,
-    [RA, RB, RC, RD, RE, RF]
-  >;
+  ): Medium<Compute<A & B & C & D & E & F>, [RA, RB, RC, RD, RE, RF]>;
   <A, RA, B, RB, C, RC, D, RD, E, RE, F, RF, G, RG>(
     a: Medium<A, RA>,
     b: Medium<B, RB>,
@@ -47,10 +44,7 @@ type Combine = {
     e: Medium<E, RE>,
     f: Medium<F, RF>,
     g: Medium<G, RG>,
-  ): Medium<
-    Compute<A & B & C & D & E & F & G>,
-    [RA, RB, RC, RD, RE, RF, RG]
-  >;
+  ): Medium<Compute<A & B & C & D & E & F & G>, [RA, RB, RC, RD, RE, RF, RG]>;
 };
 
 export const combine: Combine = <E extends Medium<any, any>[]>(...es: E) =>
@@ -60,7 +54,7 @@ export const combine: Combine = <E extends Medium<any, any>[]>(...es: E) =>
       (es): Carrier<any, any> => ({
         type: 'carrier',
         sources: es.reduce((acc, cur) => ({ ...acc, ...cur.sources }), {}),
-        reflection: action$ => es.map(e => e.reflection(action$)),
+        reflection: (action$) => es.map((e) => e.reflection(action$)),
       }),
     ),
   ) as any;

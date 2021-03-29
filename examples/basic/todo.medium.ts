@@ -1,11 +1,11 @@
-import { medium, ray } from '../../src';
+import { medium, effect } from '../../src';
 import { pipe } from 'fp-ts/lib/pipeable';
 import * as rxo from 'rxjs/operators';
 import { array, option } from 'fp-ts';
 import { makeTodoSource, TodoSource } from './todo.source';
 import { TodoApi, makeTodoApi } from './todo.api';
 
-type Deps = {
+export type TodoDeps = {
   todoApi: TodoApi;
   todoSource: TodoSource;
 };
@@ -13,24 +13,24 @@ type Deps = {
 export const todoMedium = medium.map(
   // Creates a minimal medium value(similar to Applicative's of).
   // Keys('todoApi', 'todoSource') are a memoization measure - this ensures
-  // that regardless of the object passed to Medium, it will only recreate itself when
+  // that regardless of an object passed to Medium, it will only recreate itself when
   // the values at the aforementioned keys have changed.
-  medium.id<Deps>()('todoApi', 'todoSource'),
+  medium.id<TodoDeps>()('todoApi', 'todoSource'),
   (deps, on) => {
     const { todoApi, todoSource } = deps;
 
-    const setTodos$ = pipe(
+    const setTodos = pipe(
       // this function is used to filter actions triggered by sources
+      // it returns an observable with an action payload
       on(todoSource.create('getTodos')),
       rxo.switchMap(todoApi.getTodos),
-      // `ray` is a generic action creator used to add information to side effects.
-      // `infer` derives the following action automatically upon mapping: Ray<'setTodos$', RequestResult<Todo[]>>,
-      ray.infer(todos =>
+      // create an effect representation
+      effect.tag('setTodos', todos =>
         todoSource.state.modify(state => ({ ...state, todos })),
       ),
     );
 
-    const updateTodo$ = pipe(
+    const updateTodo = pipe(
       on(todoSource.create('toggleDone')),
       rxo.withLatestFrom(todoSource.state.value$),
       rxo.map(([id, state]) =>
@@ -40,7 +40,7 @@ export const todoMedium = medium.map(
           option.chain(array.findFirst(todo => todo.id === id)),
         ),
       ),
-      ray.infer(todo => {
+      effect.tag('updateTodo', todo => {
         if (option.isSome(todo)) {
           todoApi.updateTodo(todo.value);
         }
@@ -48,8 +48,8 @@ export const todoMedium = medium.map(
     );
 
     return {
-      setTodos$,
-      updateTodo$,
+      setTodos,
+      updateTodo,
     };
   },
 );

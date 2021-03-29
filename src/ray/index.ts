@@ -1,3 +1,3 @@
-import { isRay, create, tap, infer, inferVoid, map } from './ray';
+import { isRay, create } from './ray';
 
-export const ray = { isRay, create, tap, infer, inferVoid, map };
+export const ray = { isRay, create };

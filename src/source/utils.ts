@@ -31,6 +31,6 @@ export const fromCreator = (action$: rx.Observable<Action<any>>) => <
 }): rx.Observable<A> =>
   pipe(
     action$,
-    rxo.filter(action => action.type === actionCreator.getType()),
-    rxo.map(action => action.payload),
+    rxo.filter((action) => action.type === actionCreator.getType()),
+    rxo.map((action) => action.payload),
   );

@@ -22,9 +22,8 @@ describe('todo', () => {
         const { todoSource } = deps;
 
         todoSource.dispatch('getTodos')();
-
         expect(history.take()).toStrictEqual([
-          output('setTodos$')(requestResult.success([])),
+          output('setTodos')(requestResult.success([])),
         ]);
       },
     ),
@@ -35,7 +34,7 @@ describe('todo', () => {
     withTodo(
       () => {
         const todoSource = makeTodoSource();
-        todoSource.state.modify(state => ({
+        todoSource.state.modify((state) => ({
           ...state,
           todos: requestResult.success([{ id: 1, text: '', done: false }]),
         }));
@@ -53,12 +52,12 @@ describe('todo', () => {
 
         todoSource.dispatch('toggleDone')(0);
         expect(history.take()).toStrictEqual([
-          output('updateTodo$')(option.none),
+          output('updateTodo')(option.none),
         ]);
 
         todoSource.dispatch('toggleDone')(1);
         expect(history.take()).toStrictEqual([
-          output('updateTodo$')(option.some({ id: 1, text: '', done: true })),
+          output('updateTodo')(option.some({ id: 1, text: '', done: true })),
         ]);
       },
     ),

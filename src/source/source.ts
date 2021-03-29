@@ -13,8 +13,8 @@ import {
 } from './model';
 
 const defaultFormat = (id: string): Formatter => ({
-  format: key => `${id}.${key}`,
-  unformat: tag => tag.split('.')[1],
+  format: (key) => `${id}.${key}`,
+  unformat: (tag) => tag.split('.')[1],
 });
 
 export const makeActions = <S>({ id }: Options) => <A extends ReducerMap<S>>(
@@ -74,9 +74,9 @@ export const fromActions = <S, A extends ActionPack<S, any>>(
     id,
     state,
     reduce,
-    create: key => create[key],
+    create: (key) => create[key],
     action$: pipe(actions.asObservable(), shareReplay(1)),
-    dispatch: key => dispatchers[key as any] as any,
+    dispatch: (key) => dispatchers[key as any] as any,
   };
 };
 
