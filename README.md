@@ -22,7 +22,7 @@ npm install @performance-artist/react-utils
 
 2. Simple, but powerful abstraction to handle incoming view actions and trigger side effects(`Medium`), which is easy to compose and extend.
 
-3. Complete separation of the view, its state and events from business logic and side effects.
+3. Built with a complete separation of view, its state and events from business logic and side effects.
 
 4. Rich type information.
 
@@ -30,7 +30,7 @@ npm install @performance-artist/react-utils
 
 `@performance-artist/fp-ts-adt` provides utilities and adts, most prominent being `selector` for `Reader`-based di and memoized selector creation.
 
-`@performance-artist/rx-utils` provides a wrapper over `BehaviorSubject` with monad instance - `behavior`. It also includes reactive key-value cache(`store`), which is used to create an interface over the transport layer(e.g. REST or websocket client).
+`@performance-artist/rx-utils` provides a wrapper over `BehaviorSubject` with a monad instance - `behavior`. It also includes reactive key-value cache(`store`), which could be used to create an interface over the transport layer(e.g. REST or websocket client).
 
 `@performance-artist/react-utils` contains hooks and hocs for react.
 
@@ -40,13 +40,13 @@ Full example of the proposed architecture and these packages at work can be foun
 
 ### Source
 
-`Source` is a representation of the view's state and events. So it is a "source" of them. It should contain everything view needs for initial rendering as its state + a set of events, which are fired upon user interaction. Events are represented by actions, which can either change the state or keep it the same, representing an event(in this case they're aliased by `source.input`). There are two important notes:
+`Source` is a representation of view's state and events. So it is a "source" of them. It should contain everything view needs for initial rendering as its state + a set of events, which are fired upon user interaction. Events are represented by actions, which can either change the state or keep it the same, meaning that it is an event that is handled separately(in this case they're aliased by `source.input`). There are three important notes:
 
 1. View should only interact with `Source` through actions(using `dispatch` function provided by `Source`), not modify its state directly. Actions should be as simple as possible - ideally only basic set and update operations.
 
-2. The actions defined in `Source` should be utilized by view. There should not be any actions that aren't dispatched by view in one way or another.
+2. The actions defined in `Source` should be utilized by view exclusively. There should not be any actions that aren't dispatched by view in one way or another.
 
-3. `Source` should not have any external dependencies and should not do any side effects, such as api calls. If a state change requires an additional dependency, action should be kept empty(as an event).
+3. `Source` should not have any external dependencies and should not produce any side effects, such as api calls. If a state change requires an additional dependency, action should be kept "empty". That is, it should not change the state and be created with `source.input`.
 
 ### Medium
 
@@ -54,7 +54,7 @@ Full example of the proposed architecture and these packages at work can be foun
 
 The main idea behind `Medium` is presentation of side-effects as actions. It is a lot like `Epic` from `redux-observable`: actions in - actions out.
 
-`Medium` returns an object of `Effect`s. The whole purpose of `Medium` is to produce `Effect`s from observables. Any side effect triggered by observable(e.g. `Source` state modification) should become an `Effect`. By no circumstances should `tap` be used for this purpose.
+`Medium` returns an object of `Effect`s. The whole purpose of `Medium` is to build `Effect`s from observables. Any side effect triggered by observable(e.g. `Source` state modification) should become an `Effect`. By no circumstances should `tap` be used for this purpose.
 
 This
 
@@ -74,17 +74,21 @@ Typical flow inside of a `Medium` looks as the following:
     map data needed to run a side effect ->
     create an `Effect` and return it as a part of the result object
 
-`Medium` also has a dependency injection support. This is done so side effects can be mocked, by passing mocks in tests.
+`Medium` also has a dependency injection support. This is done so side effects can be mocked in tests and comes with a benefit of easy modification and code separation. `Medium` isn't meant to hold any data besides the specific cases where the data is truly local. It is merely an integration layer between view and the world. Once `Medium` needs something to do the real world's work, it should be created separately and specified as a dependency, not utilized directly.
 
 ### Effect
 
 `Effect` is an abstraction that represents an input stream, associated with an effectful function and a tag. Every time the stream emits a value, the function receives it and produces a side effect, such as a `Source` state modification or any other external call.
 
-There are two constraints enforced by the abstraction. The first one is effect immutability and non-composability - once an `Effect` is created, neither its tag, nor its worker function can be modified or discarded. Each `Effect` should be distinct and have one responsibility, reflected by its name(tag).
+There are two constraints enforced by the abstraction.
+
+1. Effect immutability and non-composability - once an `Effect` is created, neither its tag, nor its worker function can be modified or discarded.
+
+2. Tag uniqueness withing one `Medium`(and overall, ideally, to avoid confusion). Each tag can only be associated with one `Effect`. This further solidifies the intent to make every `Effect` a distinct entity with a single responsibility, reflected by its name(tag).
 
 There are three basic `Effect` operations:
 
-1. Creation(`effect.tag`). To create an `Effect`, you need a stream of values(such as user events), a unique(in the `Medium` scope) tag, and a function to execute a side effect.
+1. Creation(`effect.tag`). To create an `Effect`, you need a stream of values(such as user events), a unique tag, and a function to execute a side effect.
 
 ```ts
 const clickLog = pipe(
