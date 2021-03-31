@@ -74,7 +74,7 @@ Typical flow inside of a `Medium` looks as the following:
     map data needed to run a side effect ->
     create an `Effect` and return it as a part of the result object
 
-`Medium` also has a (dependency injection support)[https://github.com/performanceArtist/fp-ts-adt/blob/master/examples/reader/reader.md]. This is done so side effects can be mocked in tests and comes with a benefit of easy modification and code separation. `Medium` isn't meant to hold any data besides the specific cases where the data is truly local. It is merely an integration layer between view and the world. Once `Medium` needs something to do the real world's work, it should be created separately and specified as a dependency, not utilized directly.
+`Medium` also has a [dependency injection support](https://github.com/performanceArtist/fp-ts-adt/blob/master/examples/reader/reader.md). This is done so side effects can be mocked in tests and comes with a benefit of easy modification and code separation. `Medium` isn't meant to hold any data besides the specific cases where the data is truly local. It is merely an integration layer between view and the world. Once `Medium` needs something to do the real world's work, it should be created separately and specified as a dependency, not utilized directly.
 
 ### Effect
 
