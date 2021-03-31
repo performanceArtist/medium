@@ -13,6 +13,8 @@ export type Effect<T, P> = {
   effect: (payload: P) => void;
 };
 
+export type EffectPayload<E> = E extends Effect<any, infer P> ? P : never;
+
 export const tag = <E extends string, A>(tag: E, f: (a: A) => void) => (
   o: rx.Observable<A>,
 ): Effect<E, A> => ({
@@ -118,52 +120,26 @@ export function branches(
   );
 }
 
-export type PartialEffect<P> = {
-  type: 'partialEffect';
-  value: <T extends string>(tag: T) => rx.Observable<Ray<T, P>>;
-  effect: (payload: P) => void;
-};
-
-export type PartialEffectPayload<E> = E extends PartialEffect<infer P>
-  ? P
-  : never;
-
+type PartialEffect<A> = <T>(tag: T) => Effect<T, A>;
 export const partial = <A>(f: (a: A) => void) => (
   o: rx.Observable<A>,
-): PartialEffect<A> => ({
-  type: 'partialEffect',
-  value: (tag) => pipe(o, rxo.map(ray.create(tag))),
+): PartialEffect<A> => <T>(tag: T): Effect<T, A> => ({
+  type: 'effect',
+  tag,
+  value: pipe(o, rxo.map(ray.create(tag))),
   effect: f,
 });
 
 export type EffectTree = Record<string, Effect<any, any>>;
 
-export type PartialEffectTree = Record<string, PartialEffect<unknown>>;
-
-export type ApplyTags<B extends PartialEffectTree> = {
-  [key in keyof B]: Effect<key, PartialEffectPayload<B[key]>>;
+export type ApplyTags<B extends Record<string, PartialEffect<any>>> = {
+  [key in keyof B]: Effect<key, EffectPayload<ReturnType<B[key]>>>;
 };
 
-type AnyEffect = PartialEffect<unknown> | Effect<unknown, unknown>;
-type AnyTree = Record<string, AnyEffect>;
-
-type InferTree<T> = {
-  [key in keyof T]: T[key] extends PartialEffect<infer P>
-    ? Effect<key, P>
-    : T[key] extends Effect<unknown, unknown>
-    ? T[key]
-    : never;
-};
-
-export const tagAll = <A extends AnyTree>(a: A): Compute<InferTree<A>> =>
-  pipe(a, record.mapWithIndex(applyKey)) as any;
-
-const applyKey = (key: string, value: AnyEffect): AnyEffect =>
-  value.type === 'partialEffect'
-    ? {
-        type: 'effect',
-        tag: key,
-        value: value.value(key),
-        effect: value.effect,
-      }
-    : value;
+export const tagObject = <A extends Record<string, PartialEffect<any>>>(
+  a: A,
+): Compute<ApplyTags<A>> =>
+  pipe(
+    a,
+    record.mapWithIndex((key, value) => value(key)),
+  ) as any;

@@ -1,4 +1,4 @@
-import { partial, tagAll, branch, branches, tag, transform } from './effect';
+import { partial, tagObject, branch, branches, tag, transform } from './effect';
 
 export const effect = {
   branch,
@@ -6,5 +6,5 @@ export const effect = {
   tag,
   transform,
   partial,
-  tagAll,
+  tagObject,
 };
