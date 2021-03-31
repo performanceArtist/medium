@@ -28,7 +28,7 @@ npm install @performance-artist/react-utils
 
 5. Integration with `react` and `fp-ts`. Also, as mentioned, this library is a part of a group of packages, which are meant to be used together to form a complete set of tools for frontend development(barring ui) with `react`, `rxjs` and `fp-ts`:
 
-`@performance-artist/fp-ts-adt` provides utilities and adts, most prominent being `selector` for `Reader`-based di and memoized selector creation.
+`@performance-artist/fp-ts-adt` provides utilities and adts, most prominent being `selector` for `Reader`-based di(you can read about it [here](https://github.com/performanceArtist/fp-ts-adt/blob/master/examples/reader/reader.md)) and memoized selector creation.
 
 `@performance-artist/rx-utils` provides a wrapper over `BehaviorSubject` with a monad instance - `behavior`. It also includes reactive key-value cache(`store`), which could be used to create an interface over the transport layer(e.g. REST or websocket client).
 
@@ -74,7 +74,7 @@ Typical flow inside of a `Medium` looks as the following:
     map data needed to run a side effect ->
     create an `Effect` and return it as a part of the result object
 
-`Medium` also has a dependency injection support. This is done so side effects can be mocked in tests and comes with a benefit of easy modification and code separation. `Medium` isn't meant to hold any data besides the specific cases where the data is truly local. It is merely an integration layer between view and the world. Once `Medium` needs something to do the real world's work, it should be created separately and specified as a dependency, not utilized directly.
+`Medium` also has a (dependency injection support)[https://github.com/performanceArtist/fp-ts-adt/blob/master/examples/reader/reader.md]. This is done so side effects can be mocked in tests and comes with a benefit of easy modification and code separation. `Medium` isn't meant to hold any data besides the specific cases where the data is truly local. It is merely an integration layer between view and the world. Once `Medium` needs something to do the real world's work, it should be created separately and specified as a dependency, not utilized directly.
 
 ### Effect
 
