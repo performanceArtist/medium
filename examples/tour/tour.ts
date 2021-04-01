@@ -53,7 +53,9 @@ export const tourEnvMedium = medium.map(
   },
 );
 
-// More advanced case - what if we need a symbol(currency pair) to start a tour?
+// EXPERIMENTAL
+
+// What if we need a symbol(currency pair) to start a tour?
 // We want to make sure we can "point" to that symbol with tour, otherwise tour should not start.
 
 const tourSymbolMedium = medium.map(
@@ -80,7 +82,7 @@ export const tourSymbolEnvMedium = pipe(
     carrier.map(envMedium, (deps) => {
       const { userInfo, symbolProvider } = deps;
 
-      const tourEffects$ = pipe(
+      const tour = pipe(
         rx.combineLatest([userInfo.isFirstLogin$, symbolProvider.symbol$]),
         rxo.filter(([isFirstLogin]) => isFirstLogin),
         rxo.switchMap(([_, symbol]) =>
@@ -88,21 +90,14 @@ export const tourSymbolEnvMedium = pipe(
             tourMedium.run({
               symbol,
             }),
-            // uses sources to produce an effect map
             carrier.merge,
           ),
         ),
-      );
-
-      const tourStart = pipe(
-        tourEffects$,
-        rxo.filter(e => e.type === 'setIsOpen'),
-        rxo.map((e) => e.payload),
-        effect.tag('setIsOpen', () => {}),
+        effect.tag('tour', () => {}),
       );
 
       return {
-        tourStart,
+        tour,
       };
     }),
   ),

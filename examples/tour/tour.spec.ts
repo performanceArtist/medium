@@ -1,6 +1,7 @@
 import { withMedium } from '../../src/medium/testing';
 import { tourEnvMedium, tourSymbolEnvMedium } from './tour';
 import * as rx from 'rxjs';
+import { ray } from '../../src';
 
 describe('Env', () => {
   const withEnv = withMedium(tourEnvMedium);
@@ -51,7 +52,9 @@ describe('Symbol env', () => {
         expect(history.take()).toStrictEqual([]);
 
         symbol.next('USD/CAD');
-        expect(history.take()).toStrictEqual([output('setIsOpen')(true)]);
+        expect(history.take()).toStrictEqual([
+          output('tour')(ray.create('setIsOpen' as const)(true)),
+        ]);
       },
     ),
   );
