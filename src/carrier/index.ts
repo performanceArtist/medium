@@ -8,5 +8,5 @@ export const carrier = {
   toEffectTree,
   map,
   from,
-  applyEffects
+  applyEffects,
 };
