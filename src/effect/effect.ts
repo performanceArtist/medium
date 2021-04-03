@@ -130,7 +130,7 @@ export const partial = <A>(f: (a: A) => void) => (
   effect: f,
 });
 
-export type EffectTree = Record<string, Effect<any, any>>;
+export type EffectTree = Record<string, Effect<unknown, unknown>>;
 
 export type ApplyTags<B extends Record<string, PartialEffect<any>>> = {
   [key in keyof B]: Effect<key, EffectPayload<ReturnType<B[key]>>>;

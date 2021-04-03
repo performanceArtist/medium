@@ -25,13 +25,15 @@ export const applyEffects = <V extends EffectTree>(
 ): rx.Observable<ObservableValue<V[keyof V]['value']>> => {
   const effects: Record<string, Function> = pipe(
     vs,
-    record.reduce({}, (acc, e) => ({ ...acc, [e.tag]: e.effect })),
+    record.reduce({}, (acc, e) => ({ ...acc, [e.tag as string]: e.effect })),
   );
 
   return pipe(
     mergeInputs(vs),
     rxo.tap(
-      (action) => effects[action.type] && effects[action.type](action.payload),
+      (action) =>
+        effects[action.type as string] &&
+        effects[action.type as string](action.payload),
     ),
   );
 };

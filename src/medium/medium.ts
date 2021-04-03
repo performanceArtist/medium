@@ -7,6 +7,7 @@ import { Carrier, CarrierSource, map as carrierMap } from '../carrier/carrier';
 import { merge } from '../carrier/merge';
 import { flow } from 'fp-ts/lib/function';
 import { EffectTree } from '../effect/effect';
+import { combine } from './combine';
 
 export type Medium<E, A> = Selector<E, Carrier<E, A>>;
 export type AnyMedium = Medium<{}, EffectTree>;
@@ -40,7 +41,28 @@ export const map = <D, A, B extends EffectTree>(
     selector.map((c) => carrierMap(c, f)),
   );
 
-export const decorate = <M extends Medium<any, any>>(m: M) => {};
+export const decorateWith = <V extends EffectTree>() => <
+  D extends Medium<any, any>
+>(
+  d: D,
+) => <R extends EffectTree>(
+  f: (
+    deps: MediumDeps<D>,
+    on: ReturnType<typeof fromCreator>,
+    values: [MediumValue<D>, V],
+  ) => R,
+) => <M extends Medium<any, V>>(
+  m: M,
+): Medium<
+  Compute<MediumDeps<D> & MediumDeps<M>>,
+  Compute<MediumValue<M> & R>
+> =>
+  map(combine(d, m as Medium<{}, V>), (deps, on, values) => ({
+    ...values[1],
+    ...f(deps as any, on, values),
+  })) as any;
+
+export const decorateAny = decorateWith<EffectTree>();
 
 export const subscribe = flow(merge, (output$) => output$.subscribe());
 

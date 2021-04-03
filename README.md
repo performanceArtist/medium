@@ -148,6 +148,8 @@ Basic todo example: `examples/basic`.
 
 The advanced `tour` example: `examples/tour`.
 
+Decorators(higher order functions that can add effects to different `Medium`s) examples: `examples/decorators`.
+
 ### Todo
 
 [Repo](https://github.com/performanceArtist/medium-todo)
