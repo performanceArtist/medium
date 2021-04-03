@@ -12,6 +12,14 @@ const clickLog = pipe(
   effect.tag('clickLog', (data) => console.log('click', data)),
 );
 
+{
+  const clickLog = pipe(
+    rx.from(['click1', 'click2']),
+    effect.partial((data) => console.log('click', data)),
+  );
+  const effects = effect.tagObject({ clickLog });
+}
+
 const firstClickLog = pipe(clickLog, effect.transform(rxo.first()));
 
 // imagine we only have an access to clickLog,

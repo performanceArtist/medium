@@ -97,6 +97,16 @@ const clickLog = pipe(
 );
 ```
 
+Or you can use `effect.partial` + `effect.tagObject` to produce tags from object keys:
+
+```ts
+const clickLog = pipe(
+  rx.from(['click1', 'click2']),
+  effect.partial((data) => console.log('click', data)),
+);
+const effects = effect.tagObject({ clickLog });
+```
+
 2. Modification(`effect.transform`). The only way to modify `Effect` is to alter its input stream with `transform` function. The stream type should stay the same and the result of modification should become a substitute for the input `Effect`. If both input and output effects are needed(i.e. the output is not a substitute for the input), `effect.branch` should be used instead.
 
 ```ts
