@@ -1,11 +1,12 @@
 import { fromSources, map, from } from './carrier';
-import { mergeOutput, merge, unwrap } from './merge';
+import { merge, mergeInputs, toEffectTree, applyEffects } from './merge';
 
 export const carrier = {
   fromSources,
   merge,
-  mergeOutput,
+  mergeInputs,
+  toEffectTree,
   map,
   from,
-  unwrap,
+  applyEffects
 };

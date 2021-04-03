@@ -11,6 +11,7 @@ import { EffectTree } from '../effect/effect';
 export type Medium<E, A> = Selector<E, Carrier<E, A>>;
 export type AnyMedium = Medium<{}, EffectTree>;
 export type MediumValue<E> = E extends Medium<any, infer A> ? A : never;
+export type MediumDeps<E> = E extends Medium<infer E, any> ? E : never;
 
 export const id = <D extends Record<string, any>>() => <
   K extends keyof D = never
@@ -38,6 +39,8 @@ export const map = <D, A, B extends EffectTree>(
     m,
     selector.map((c) => carrierMap(c, f)),
   );
+
+export const decorate = <M extends Medium<any, any>>(m: M) => {};
 
 export const subscribe = flow(merge, (output$) => output$.subscribe());
 
