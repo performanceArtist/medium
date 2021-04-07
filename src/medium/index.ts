@@ -1,4 +1,12 @@
-import { id, map, run, subscribe, decorateWith, decorateAny } from './medium';
+import {
+  id,
+  map,
+  run,
+  subscribe,
+  subscribeWith,
+  decorateWith,
+  decorateAny,
+} from './medium';
 import { combine } from './combine';
 import {
   withMedium,
@@ -13,6 +21,7 @@ export const medium = {
   combine,
   run,
   subscribe,
+  subscribeWith,
   decorateWith,
   decorateAny,
 };

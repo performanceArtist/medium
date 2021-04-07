@@ -7,6 +7,7 @@ import { merge } from '../carrier/merge';
 import { flow } from 'fp-ts/lib/function';
 import { EffectTree } from '../effect/effect';
 import { combine } from './combine';
+import { Ray } from 'ray/ray';
 
 export type Medium<E, A> = Selector<E, Carrier<E, A>>;
 export type AnyMedium = Medium<{}, EffectTree>;
@@ -55,7 +56,10 @@ export const decorateWith = <V extends EffectTree>() => <
 
 export const decorateAny = decorateWith<EffectTree>();
 
-export const subscribe = flow(merge, (output$) => output$.subscribe());
+export const subscribeWith = (onEmit: (action: Ray<string, any>) => void) =>
+  flow(merge, (output$) => output$.subscribe(onEmit));
+
+export const subscribe = subscribeWith(() => {});
 
 export const run = <E>(deps: E) => <A extends EffectTree>(m: Medium<E, A>) =>
   pipe(m.run(deps), subscribe);
