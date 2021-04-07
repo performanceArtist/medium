@@ -29,43 +29,26 @@ export type ToActions<S, A extends ReducerMap<S>> = {
     : never;
 };
 
-export type Options = {
-  id: SourceID;
+export type Emitter<A> = {
+  value$: rx.Observable<A>;
+  next: (value: A) => void;
 };
 
-export type Formatter = {
-  format: (key: string) => string;
-  unformat: (tag: string) => string;
+export type EmitterMap<A extends ReducerMap<any>> = {
+  [key in keyof A]: Parameters<ReturnType<A[key]>>[0] extends undefined
+    ? Emitter<void>
+    : Emitter<Parameters<ReturnType<A[key]>>[0]>;
 };
 
-export type SourceID = string;
-
-export type ActionPack<S, A extends ReducerMap<S>> = {
-  id: SourceID;
-  reduce: A;
-  create: ToActions<S, A>;
-  formatter: Formatter;
-};
-
-export type Source<S, A extends ActionPack<S, any>> = {
+export type Source<S, A extends ReducerMap<any>> = {
   type: 'source';
-  id: SourceID;
   state: Behavior<S>;
-  reduce: A['reduce'];
-  create: <K extends keyof A['create']>(key: K) => A['create'][K];
-  dispatch: <K extends keyof A['create']>(
-    key: K,
-  ) => Parameters<ReturnType<A['reduce'][K]>>[0] extends void
-    ? () => void
-    : (payload: Parameters<ReturnType<A['reduce'][K]>>[0]) => void;
-  action$: rx.Observable<AnyAction>;
+  reduce: A;
+  on: EmitterMap<A>;
 };
 
 export type ToReducerMap<S, A extends object> = {
   [key in keyof A]: (state: S) => (value: A[key]) => S;
 };
 
-export type SourceOf<S, A extends object> = Source<
-  S,
-  ActionPack<S, ToReducerMap<S, A>>
->;
+export type SourceOf<S, A extends object> = Source<S, ToReducerMap<S, A>>;

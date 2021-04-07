@@ -54,7 +54,7 @@ export const combine: Combine = <E extends Medium<any, any>[]>(...es: E) =>
       (es): Carrier<any, any> => ({
         type: 'carrier',
         sources: es.reduce((acc, cur) => ({ ...acc, ...cur.sources }), {}),
-        reflection: (action$) => es.map((e) => e.reflection(action$)),
+        effects: es.map((e) => e.effects),
       }),
     ),
   ) as any;

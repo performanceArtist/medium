@@ -8,7 +8,7 @@ type WithLoggerDeps = {
 };
 
 const withLogger = medium.decorateAny(medium.id<WithLoggerDeps>()('log'))(
-  (deps, _, [__, effects]) => {
+  (deps, [_, effects]) => {
     const log = pipe(
       carrier.mergeInputs(effects),
       rxo.map(({ type, payload }) => ({

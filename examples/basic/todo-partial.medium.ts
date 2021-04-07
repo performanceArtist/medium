@@ -6,11 +6,11 @@ import { array, option } from 'fp-ts';
 
 export const todoMedium = medium.map(
   medium.id<TodoDeps>()('todoApi', 'todoSource'),
-  (deps, on) => {
+  (deps) => {
     const { todoApi, todoSource } = deps;
 
     const setTodos = pipe(
-      on(todoSource.create('getTodos')),
+      todoSource.on.getTodos.value$,
       rxo.switchMap(todoApi.getTodos),
       effect.partial((todos) =>
         todoSource.state.modify((state) => ({ ...state, todos })),
@@ -18,7 +18,7 @@ export const todoMedium = medium.map(
     );
 
     const updateTodo = pipe(
-      on(todoSource.create('toggleDone')),
+      todoSource.on.toggleDone.value$,
       rxo.withLatestFrom(todoSource.state.value$),
       rxo.map(([id, state]) =>
         pipe(

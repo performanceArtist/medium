@@ -1,6 +1,5 @@
 import { array, record } from 'fp-ts';
 import { pipe } from 'fp-ts/lib/pipeable';
-import { combineActions, isSource } from '../source/utils';
 import { Carrier } from './carrier';
 import * as rx from 'rxjs';
 import * as rxo from 'rxjs/operators';
@@ -36,12 +35,7 @@ export const applyEffects = <V extends EffectTree>(
   );
 };
 
-export const toEffectTree = <E, A extends EffectTree>(carrier: Carrier<E, A>) =>
-  pipe(carrier.sources, Object.values, array.filter(isSource), (sources) =>
-    carrier.reflection(combineActions(...sources)),
-  );
-
 export const merge = <E, A extends EffectTree>(
   carrier: Carrier<E, A>,
 ): rx.Observable<ObservableValue<A[keyof A]['value']>> =>
-  pipe(toEffectTree(carrier), applyEffects);
+  pipe(carrier.effects, applyEffects);

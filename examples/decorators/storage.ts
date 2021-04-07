@@ -10,19 +10,19 @@ type Metric = {
   value: number;
 };
 
-type HasCachedCall = {
+type HasMetricsCall = {
   setMetrics: Effect<'setMetrics', { type: string; data: Metric[] }>;
 };
 
-const withCachedCall = medium.decorateWith<HasCachedCall>();
+const withMetricsCall = medium.decorateWith<HasMetricsCall>();
 
-type WithStorageDeps = {
+type WithCachedMetricsDeps = {
   storage: Storage;
 };
 
-const withCachedMetrics = withCachedCall(
-  medium.id<WithStorageDeps>()('storage'),
-)((deps, _, [__, effects]) => {
+const withCachedMetrics = withMetricsCall(
+  medium.id<WithCachedMetricsDeps>()('storage'),
+)((deps, [_, effects]) => {
   const { storage } = deps;
 
   const cacheMetrics = pipe(

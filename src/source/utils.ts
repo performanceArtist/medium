@@ -1,18 +1,7 @@
-import { Action, AnyAction, Source } from './model';
+import { Action, Source } from './model';
 import * as rx from 'rxjs';
 import { pipe } from 'fp-ts/lib/pipeable';
-import { array } from 'fp-ts';
 import * as rxo from 'rxjs/operators';
-
-export const combineActions = (
-  ...sources: Source<any, any>[]
-): rx.Observable<AnyAction> =>
-  pipe(
-    sources,
-    array.reduce(rx.EMPTY, (acc, source) =>
-      rx.merge(acc, source.action$ as any),
-    ),
-  );
 
 export const isSource = (input: any): input is Source<any, any> =>
   input.type === 'source';

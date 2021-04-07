@@ -14,7 +14,7 @@ export type ReportDeps = {
 
 export const withReports = medium.map(
   medium.combine(todoMedium, medium.id<ReportDeps>()('logger')),
-  (deps, on, [todoMedium]) => {
+  (deps, [todoMedium]) => {
     const { todoSource, logger } = deps;
 
     const errorReport = pipe(
@@ -25,7 +25,7 @@ export const withReports = medium.map(
       effect.branch(
         flow(
           rxo.filter(option.isNone),
-          rxo.withLatestFrom(on(todoSource.create('toggleDone'))),
+          rxo.withLatestFrom(todoSource.on.toggleDone.value$),
           rxo.map(([_, id]) => id),
           effect.tag('errorReport', (id) =>
             logger(`Todo not found by id: ${id}`),

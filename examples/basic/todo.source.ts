@@ -24,17 +24,14 @@ const initialState: TodoState = {
 // There are no reasons I know of not to make sources lazy, as it gives you more flexibility and
 // control over creation. This way you can also create multiple components with the same state and event shape.
 export const makeTodoSource = () =>
-  source.create(
-    'todo',
-    initialState,
-  )({
+  source.create(initialState, {
     getTodos: source.input<void>(),
-    toggleDone: state => (id: number) => ({
+    toggleDone: (state) => (id: number) => ({
       ...state,
       todos: pipe(
         state.todos,
         either.map(
-          array.map(todo =>
+          array.map((todo) =>
             todo.id === id ? { ...todo, done: !todo.done } : todo,
           ),
         ),
@@ -45,11 +42,9 @@ export const makeTodoSource = () =>
 export type TodoSource = ReturnType<typeof makeTodoSource>;
 
 const todoSource = makeTodoSource();
-// create an action
-const action = todoSource.create('toggleDone')(0);
 
 // dispatch an action
-todoSource.dispatch('toggleDone')(0);
+todoSource.on.toggleDone.next(0);
 
 // State is a behavior - i.e. an observable with a notion of a current value.
 // It's represented by a wrapper over BehaviorSubject with some additional methods for convenience.
@@ -58,7 +53,7 @@ todoSource.dispatch('toggleDone')(0);
 const currentState = todoSource.state.get();
 const state$ = todoSource.state.value$;
 todoSource.state.set({ todos: requestResult.success([]) });
-todoSource.state.modify(state => ({
+todoSource.state.modify((state) => ({
   ...state,
   todos: requestResult.success([]),
 }));
@@ -74,7 +69,7 @@ todoSource.state.modify(state => ({
 const getStats = pipe(
   selector.focus<TodoState>()('todos'),
   selector.map(
-    either.map(todos => ({
+    either.map((todos) => ({
       total: todos.length,
       done: pipe(
         todos,

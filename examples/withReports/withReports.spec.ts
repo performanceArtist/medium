@@ -28,13 +28,13 @@ describe('reports', () => {
     withReports(makeDeps, (deps, history, output) => {
       const { todoSource } = deps;
 
-      todoSource.dispatch('getTodos')();
+      todoSource.on.getTodos.next();
       expect(history.take()).toStrictEqual([
         output('setTodos')(mockTodos),
         output('updateReport')(mockTodos),
       ]);
 
-      todoSource.dispatch('toggleDone')(1);
+      todoSource.on.toggleDone.next(1);
       expect(history.take()).toStrictEqual([
         output('updateTodo')(option.some({ id: 1, text: '', done: true })),
         output('updateReport')(option.some({ id: 1, text: '', done: true })),
@@ -47,7 +47,7 @@ describe('reports', () => {
     withReports(makeDeps, (deps, history, output) => {
       const { todoSource } = deps;
 
-      todoSource.dispatch('toggleDone')(10);
+      todoSource.on.toggleDone.next(10);
       const [first, ...rest] = history.take();
       expect(first).toStrictEqual(output('updateTodo')(option.none));
       expect(

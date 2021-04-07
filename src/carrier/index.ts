@@ -1,12 +1,9 @@
-import { fromSources, map, from } from './carrier';
-import { merge, mergeInputs, toEffectTree, applyEffects } from './merge';
+import { map } from './carrier';
+import { merge, mergeInputs, applyEffects } from './merge';
 
 export const carrier = {
-  fromSources,
   merge,
   mergeInputs,
-  toEffectTree,
   map,
-  from,
   applyEffects,
 };

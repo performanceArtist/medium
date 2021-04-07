@@ -16,13 +16,11 @@ export const todoMedium = medium.map(
   // that regardless of an object passed to Medium, it will only recreate itself when
   // the values at the aforementioned keys have changed.
   medium.id<TodoDeps>()('todoApi', 'todoSource'),
-  (deps, on) => {
+  (deps) => {
     const { todoApi, todoSource } = deps;
 
     const setTodos = pipe(
-      // this function is used to filter actions triggered by sources
-      // it returns an observable with an action payload
-      on(todoSource.create('getTodos')),
+      todoSource.on.getTodos.value$,
       rxo.switchMap(todoApi.getTodos),
       // create an effect representation
       effect.tag('setTodos', (todos) =>
@@ -31,7 +29,7 @@ export const todoMedium = medium.map(
     );
 
     const updateTodo = pipe(
-      on(todoSource.create('toggleDone')),
+      todoSource.on.toggleDone.value$,
       rxo.withLatestFrom(todoSource.state.value$),
       rxo.map(([id, state]) =>
         pipe(

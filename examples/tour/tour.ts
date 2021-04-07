@@ -31,7 +31,7 @@ type EnvMediumDeps = {
 
 export const tourEnvMedium = medium.map(
   medium.combine(tourMedium, medium.id<EnvMediumDeps>()('userInfo')),
-  (deps, _, [tourMedium]) => {
+  (deps, [tourMedium]) => {
     const { userInfo } = deps;
 
     // "transform" allows to modify the effect's input stream,
@@ -60,7 +60,7 @@ export const tourEnvMedium = medium.map(
 
 const tourSymbolMedium = medium.map(
   medium.combine(tourMedium, medium.id<{ symbol: string }>()('symbol')),
-  (deps, on, [value]) => value,
+  (deps, [value]) => value,
 );
 
 type EnvMediumSymbolDeps = EnvMediumDeps & {

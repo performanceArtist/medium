@@ -1,9 +1,8 @@
 import { Selector, selector } from '@performance-artist/fp-ts-adt';
 import { AllKeys } from '@performance-artist/fp-ts-adt/dist/utils';
 import { pipe } from 'fp-ts/lib/pipeable';
-import { fromCreator } from '../source/utils';
 import { Compute } from '../utils';
-import { Carrier, CarrierSource, map as carrierMap } from '../carrier/carrier';
+import { Carrier, map as carrierMap } from '../carrier/carrier';
 import { merge } from '../carrier/merge';
 import { flow } from 'fp-ts/lib/function';
 import { EffectTree } from '../effect/effect';
@@ -24,17 +23,13 @@ export const id = <D extends Record<string, any>>() => <
     selector.map((sources) => ({
       type: 'carrier',
       sources,
-      reflection: (action$) => ({}),
+      effects: {},
     })),
   );
 
 export const map = <D, A, B extends EffectTree>(
   m: Medium<D, A>,
-  f: (
-    deps: Compute<CarrierSource<D>>,
-    on: ReturnType<typeof fromCreator>,
-    a: A,
-  ) => B,
+  f: (deps: D, a: A) => B,
 ): Medium<D, B> =>
   pipe(
     m,
@@ -46,20 +41,16 @@ export const decorateWith = <V extends EffectTree>() => <
 >(
   d: D,
 ) => <R extends EffectTree>(
-  f: (
-    deps: MediumDeps<D>,
-    on: ReturnType<typeof fromCreator>,
-    values: [MediumValue<D>, V],
-  ) => R,
+  f: (deps: MediumDeps<D>, values: [MediumValue<D>, V]) => R,
 ) => <M extends Medium<any, V>>(
   m: M,
 ): Medium<
   Compute<MediumDeps<D> & MediumDeps<M>>,
   Compute<MediumValue<M> & R>
 > =>
-  map(combine(d, m as Medium<{}, V>), (deps, on, values) => ({
+  map(combine(d, m as Medium<{}, V>), (deps, values) => ({
     ...values[1],
-    ...f(deps as any, on, values),
+    ...f(deps as any, values),
   })) as any;
 
 export const decorateAny = decorateWith<EffectTree>();
