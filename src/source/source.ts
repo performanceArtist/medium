@@ -5,6 +5,7 @@ import { pipe } from 'fp-ts/lib/pipeable';
 import * as rx from 'rxjs';
 import { ReducerMap, Source, EmitterMap } from './model';
 import { applyEffects } from '../carrier/merge';
+import { Ray } from 'ray/ray';
 
 export const create = <S, A extends ReducerMap<S>>(
   initialState: S,
@@ -39,10 +40,14 @@ export const create = <S, A extends ReducerMap<S>>(
   };
 };
 
-export const subscribe = (s: Source<any, any>) =>
+export const subscribeWith = (onEmit: (action: Ray<string, any>) => void) => (
+  s: Source<any, any>,
+) =>
   pipe(
     s.on,
     record.map(({ value }) => value),
     applyEffects,
-    (o$) => o$.subscribe(),
+    (o$) => o$.subscribe(onEmit),
   );
+
+export const subscribe = subscribeWith(() => {});
