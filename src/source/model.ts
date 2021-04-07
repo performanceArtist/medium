@@ -1,5 +1,5 @@
 import { Behavior } from '@performance-artist/rx-utils';
-import * as rx from 'rxjs';
+import { Effect } from '../effect/effect';
 
 export type AnyReducer<S> = (state: S) => (value: any) => S;
 
@@ -29,18 +29,18 @@ export type ToActions<S, A extends ReducerMap<S>> = {
     : never;
 };
 
-export type Emitter<A> = {
-  value$: rx.Observable<A>;
+export type Emitter<T, A> = {
+  value: Effect<T, A>;
   next: (value: A) => void;
 };
 
 export type EmitterMap<A extends ReducerMap<any>> = {
   [key in keyof A]: Parameters<ReturnType<A[key]>>[0] extends undefined
     ? {
-        value$: rx.Observable<A>;
+        value: Effect<key, A>;
         next: () => void;
       }
-    : Emitter<Parameters<ReturnType<A[key]>>[0]>;
+    : Emitter<key, Parameters<ReturnType<A[key]>>[0]>;
 };
 
 export type Source<S, A extends ReducerMap<any>> = {

@@ -6,7 +6,6 @@ import * as rx from 'rxjs';
 import { option } from 'fp-ts';
 import { makeTodoApi } from '../basic/todo.api';
 import { makeTodoSource } from '../basic/todo.source';
-import { flow } from 'fp-ts/lib/function';
 
 export type ReportDeps = {
   logger: (info: string) => void;
@@ -17,21 +16,20 @@ export const withReports = medium.map(
   (deps, [todoMedium]) => {
     const { todoSource, logger } = deps;
 
-    const errorReport = pipe(
-      todoMedium.updateTodo,
-      // creates a new Effect, using an observable from another Effect
-      // note that the second Effect will not trigger the "parent",
-      // so in this case they both should be returned
-      effect.branch(
-        flow(
-          rxo.filter(option.isNone),
-          rxo.withLatestFrom(todoSource.on.toggleDone.value$),
+    // creates a new Effect, using an observable from another Effect
+    // note that the second Effect will not trigger the "parent",
+    // so in this case they both should be returned
+    const errorReport = effect.branches(
+      [todoMedium.updateTodo, todoSource.on.toggleDone.value],
+      ([updateTodo$, toggleDone$]) =>
+        pipe(
+          rx.combineLatest([updateTodo$, toggleDone$]),
+          rxo.filter(([todo]) => option.isNone(todo)),
           rxo.map(([_, id]) => id),
           effect.tag('errorReport', (id) =>
             logger(`Todo not found by id: ${id}`),
           ),
         ),
-      ),
     );
 
     const updateReport = effect.branches(

@@ -4,8 +4,10 @@ import { Medium } from './medium';
 import { ray } from '../ray';
 import { Ray } from '../ray/ray';
 import { pipe } from 'fp-ts/lib/pipeable';
-import { array, option } from 'fp-ts';
+import { array, option, record } from 'fp-ts';
 import { EffectTree } from '../effect/effect';
+import { source } from '../source';
+import { subscription } from '@performance-artist/fp-ts-adt/dist/subscription';
 
 export type History<A> = Behavior<A> & { take: () => A };
 
@@ -42,13 +44,21 @@ export const withMedium = <E, A extends EffectTree>(medium: Medium<E, A>) => (
   const resolved = medium.run(deps);
   const output$ = merge(resolved);
 
-  const sub = output$.subscribe((e) => {
+  const input = pipe(
+    deps,
+    record.filter(source.isSource),
+    record.toArray,
+    array.map(([_, s]) => source.subscribe(s)),
+    (e) => subscription.sequence(...e),
+  );
+  const output = output$.subscribe((e) => {
     history.modify((history) =>
       history.concat(e as ObservableValue<A[keyof A]['value']>),
     );
   });
   test(deps, history, ray.create);
-  sub.unsubscribe();
+  input.unsubscribe();
+  output.unsubscribe();
 };
 
 export const unorderedEqual = (check: (a: unknown, b: unknown) => boolean) => <
