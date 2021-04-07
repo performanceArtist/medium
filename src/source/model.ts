@@ -36,7 +36,10 @@ export type Emitter<A> = {
 
 export type EmitterMap<A extends ReducerMap<any>> = {
   [key in keyof A]: Parameters<ReturnType<A[key]>>[0] extends undefined
-    ? Emitter<void>
+    ? {
+        value$: rx.Observable<A>;
+        next: () => void;
+      }
     : Emitter<Parameters<ReturnType<A[key]>>[0]>;
 };
 
