@@ -45,9 +45,11 @@ export const transform = <P>(f: (a: rx.Observable<P>) => rx.Observable<P>) => <
     }),
   );
 
-export const branch = <P1, P2, T2>(
-  f: (o: rx.Observable<P1>) => Effect<T2, P2>,
-) => <T1>(ea: Effect<T1, P1>): Effect<T2, P2> =>
+type AnyEffect = Effect<any, any> | PartialEffect<any>;
+
+export const branch = <P1, R extends AnyEffect>(
+  f: (o: rx.Observable<P1>) => R,
+) => <T1>(ea: Effect<T1, P1>): R =>
   pipe(
     ea.value,
     rxo.map(({ payload }) => payload),
@@ -57,25 +59,23 @@ export const branch = <P1, P2, T2>(
 type RemoveRay<E> = E extends rx.Observable<Ray<any, infer P>>
   ? rx.Observable<P>
   : never;
-export function branches<E1 extends Effect<any, any>, T, P>(
+export function branches<E1 extends Effect<any, any>, R extends AnyEffect>(
   es: [E1],
-  f: (os: [RemoveRay<E1['value']>]) => Effect<T, P>,
-): Effect<T, P>;
+  f: (os: [RemoveRay<E1['value']>]) => R,
+): R;
 export function branches<
   E1 extends Effect<any, any>,
   E2 extends Effect<any, any>,
-  T,
-  P
+  R extends AnyEffect
 >(
   es: [E1, E2],
-  f: (os: [RemoveRay<E1['value']>, RemoveRay<E2['value']>]) => Effect<T, P>,
-): Effect<T, P>;
+  f: (os: [RemoveRay<E1['value']>, RemoveRay<E2['value']>]) => R,
+): R;
 export function branches<
   E1 extends Effect<any, any>,
   E2 extends Effect<any, any>,
   E3 extends Effect<any, any>,
-  T,
-  P
+  R extends AnyEffect
 >(
   es: [E1, E2, E3],
   f: (
@@ -84,15 +84,14 @@ export function branches<
       RemoveRay<E2['value']>,
       RemoveRay<E3['value']>,
     ],
-  ) => Effect<T, P>,
-): Effect<T, P>;
+  ) => R,
+): R;
 export function branches<
   E1 extends Effect<any, any>,
   E2 extends Effect<any, any>,
   E3 extends Effect<any, any>,
   E4 extends Effect<any, any>,
-  T,
-  P
+  R extends AnyEffect
 >(
   es: [E1, E2, E3, E4],
   f: (
@@ -102,8 +101,48 @@ export function branches<
       RemoveRay<E3['value']>,
       RemoveRay<E4['value']>,
     ],
-  ) => Effect<T, P>,
-): Effect<T, P>;
+  ) => R,
+): R;
+export function branches<
+  E1 extends Effect<any, any>,
+  E2 extends Effect<any, any>,
+  E3 extends Effect<any, any>,
+  E4 extends Effect<any, any>,
+  E5 extends Effect<any, any>,
+  R extends AnyEffect
+>(
+  es: [E1, E2, E3, E4, E5],
+  f: (
+    os: [
+      RemoveRay<E1['value']>,
+      RemoveRay<E2['value']>,
+      RemoveRay<E3['value']>,
+      RemoveRay<E4['value']>,
+      RemoveRay<E5['value']>,
+    ],
+  ) => R,
+): R;
+export function branches<
+  E1 extends Effect<any, any>,
+  E2 extends Effect<any, any>,
+  E3 extends Effect<any, any>,
+  E4 extends Effect<any, any>,
+  E5 extends Effect<any, any>,
+  E6 extends Effect<any, any>,
+  R extends AnyEffect
+>(
+  es: [E1, E2, E3, E4, E5, E6],
+  f: (
+    os: [
+      RemoveRay<E1['value']>,
+      RemoveRay<E2['value']>,
+      RemoveRay<E3['value']>,
+      RemoveRay<E4['value']>,
+      RemoveRay<E5['value']>,
+      RemoveRay<E6['value']>,
+    ],
+  ) => R,
+): R;
 export function branches(
   es: Effect<any, any>[],
   f: (os: any) => Effect<any, any>,
@@ -131,6 +170,7 @@ export const partial = <A>(f: (a: A) => void) => (
 });
 
 export type EffectTree = Record<string, Effect<any, any>>;
+export type PartialEffectTree = Record<string, PartialEffect<any>>;
 
 export type ApplyTags<B extends Record<string, PartialEffect<any>>> = {
   [key in keyof B]: Effect<key, EffectPayload<ReturnType<B[key]>>>;

@@ -42,3 +42,22 @@ const fetchOnClicks = effect.branches([clickLog], ([click$]) =>
     ),
   ),
 );
+
+// `effect.partial` version
+{
+  const fetchOnClick = pipe(
+    clickLog,
+    effect.branch(
+      effect.partial((clickValue) => console.log('fetch', clickValue)),
+    ),
+  );
+
+  const fetchOnClicks = effect.branches([clickLog], ([click$]) =>
+    pipe(
+      click$,
+      effect.partial((clickValue) => console.log('fetch', clickValue)),
+    ),
+  );
+
+  const result = effect.tagObject({ fetchOnClick, fetchOnClicks });
+}
