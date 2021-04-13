@@ -35,7 +35,7 @@ export type Emitter<T, A> = {
 };
 
 export type EmitterMap<A extends ReducerMap<any>> = {
-  [key in keyof A]: Parameters<ReturnType<A[key]>>[0] extends undefined
+  [key in keyof A]: Parameters<ReturnType<A[key]>>[0] extends void
     ? {
         value: Effect<key, A>;
         next: () => void;
