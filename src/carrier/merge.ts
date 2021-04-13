@@ -1,6 +1,6 @@
 import { array, record } from 'fp-ts';
 import { pipe } from 'fp-ts/lib/pipeable';
-import { Carrier } from './carrier';
+import { Carrier } from './types';
 import * as rx from 'rxjs';
 import * as rxo from 'rxjs/operators';
 import { EffectTree, Effect } from '../effect/effect';

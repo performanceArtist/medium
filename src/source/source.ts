@@ -3,11 +3,11 @@ import { effect } from '../effect';
 import { record } from 'fp-ts';
 import { pipe } from 'fp-ts/lib/pipeable';
 import * as rx from 'rxjs';
-import { ReducerMap, Source, EmitterMap } from './model';
+import { ReducerMap, Source, EmitterMap } from './types';
 import { applyEffects } from '../carrier/merge';
-import { Ray } from 'ray/ray';
+import { Action } from '../action/action';
 
-export const create = <S, A extends ReducerMap<S>>(
+const create = <S, A extends ReducerMap<S>>(
   initialState: S,
   reduce: A,
 ): Source<S, A> => {
@@ -40,9 +40,9 @@ export const create = <S, A extends ReducerMap<S>>(
   };
 };
 
-export const subscribeWith = (onEmit: (action: Ray<string, any>) => void) => (
-  s: Source<any, any>,
-) =>
+const subscribeWith = (
+  onEmit: (action: Action<string, any>) => void,
+) => (s: Source<any, any>) =>
   pipe(
     s.on,
     record.map(({ value }) => value),
@@ -50,4 +50,22 @@ export const subscribeWith = (onEmit: (action: Ray<string, any>) => void) => (
     (o$) => o$.subscribe(onEmit),
   );
 
-export const subscribe = subscribeWith(() => {});
+const subscribe = subscribeWith(() => {});
+
+const isSource = (input: any): input is Source<any, any> =>
+  input.type === 'source';
+
+const input = <I>() => <A>(state: A) => (input: I) => state;
+
+const setFor = <S>() => <K extends keyof S>(key: K) => (state: S) => (
+  value: S[K],
+): S => ({ ...state, [key]: value });
+
+export const source = {
+  create,
+  subscribe,
+  subscribeWith,
+  isSource,
+  input,
+  setFor,
+};

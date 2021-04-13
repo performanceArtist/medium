@@ -5,30 +5,6 @@ export type AnyReducer<S> = (state: S) => (value: any) => S;
 
 export type ReducerMap<S> = Record<string, AnyReducer<S>>;
 
-export type Action<P> = {
-  type: string;
-  payload: P;
-};
-
-export type AnyAction = {
-  type: string;
-  payload: unknown;
-};
-
-export type AnyCreator = (payload?: any) => AnyAction;
-
-export type WithGetType<T extends AnyCreator> = T & {
-  getType: () => string;
-};
-
-export type ToActions<S, A extends ReducerMap<S>> = {
-  [key in keyof A]: A[key] extends (state: S) => () => S
-    ? WithGetType<() => Action<void>>
-    : A[key] extends (state: S) => (payload: infer A) => S
-    ? WithGetType<(payload: A) => Action<A>>
-    : never;
-};
-
 export type Emitter<T, A> = {
   value: Effect<T, A>;
   next: (value: A) => void;

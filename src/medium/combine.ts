@@ -1,5 +1,5 @@
-import { Carrier } from '../carrier/carrier';
-import { Medium } from './medium';
+import { Carrier } from '../carrier';
+import { Medium } from './types';
 import { Compute } from '../utils';
 import { pipe } from 'fp-ts/lib/pipeable';
 import { selector } from '@performance-artist/fp-ts-adt';

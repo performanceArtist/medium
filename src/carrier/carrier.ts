@@ -1,13 +1,7 @@
 import { pipe } from 'fp-ts/lib/pipeable';
 import { EffectTree } from '../effect/effect';
 import { array, record } from 'fp-ts';
-
-export type Carrier<E, A> = {
-  type: 'carrier';
-  sources: E;
-  effects: A;
-};
-export type CarrierValue<E> = E extends Carrier<{}, infer A> ? A : never;
+import { Carrier } from './types';
 
 const tagsInvariant = <E extends EffectTree>(es: E) => {
   const tags = pipe(

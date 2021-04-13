@@ -2,31 +2,29 @@ import { pipe } from 'fp-ts/lib/pipeable';
 import * as rx from 'rxjs';
 import * as rxo from 'rxjs/operators';
 import { array, record } from 'fp-ts';
-import { Ray } from '../ray/ray';
-import { ray } from '../ray';
+import { Action } from '../action/action';
+import { action } from '../action';
 import { Compute } from '../utils';
 
 export type Effect<T, P> = {
   type: 'effect';
   tag: T;
-  value: rx.Observable<Ray<T, P>>;
+  value: rx.Observable<Action<T, P>>;
   effect: (payload: P) => void;
 };
 
 export type EffectPayload<E> = E extends Effect<any, infer P> ? P : never;
 
-export const tag = <E extends string, A>(tag: E, f: (a: A) => void) => (
+const tag = <E extends string, A>(tag: E, f: (a: A) => void) => (
   o: rx.Observable<A>,
 ): Effect<E, A> => ({
   type: 'effect',
   tag,
-  value: pipe(o, rxo.map(ray.create(tag))),
+  value: pipe(o, rxo.map(action.create(tag))),
   effect: f,
 });
 
-export const transform = <P>(f: (a: rx.Observable<P>) => rx.Observable<P>) => <
-  T
->(
+const transform = <P>(f: (a: rx.Observable<P>) => rx.Observable<P>) => <T>(
   e: Effect<T, P>,
 ): Effect<T, P> =>
   pipe(
@@ -36,7 +34,7 @@ export const transform = <P>(f: (a: rx.Observable<P>) => rx.Observable<P>) => <
         rxo.map((action) => action.payload),
       ),
     ),
-    rxo.map(ray.create(e.tag)),
+    rxo.map(action.create(e.tag)),
     (ea) => ({
       type: 'effect',
       tag: e.tag,
@@ -47,23 +45,25 @@ export const transform = <P>(f: (a: rx.Observable<P>) => rx.Observable<P>) => <
 
 type AnyEffect = Effect<any, any> | PartialEffect<any>;
 
-export const branch = <P1, R extends AnyEffect>(
-  f: (o: rx.Observable<P1>) => R,
-) => <T1>(ea: Effect<T1, P1>): R =>
+const branch = <P1, R extends AnyEffect>(f: (o: rx.Observable<P1>) => R) => <
+  T1
+>(
+  ea: Effect<T1, P1>,
+): R =>
   pipe(
     ea.value,
     rxo.map(({ payload }) => payload),
     f,
   );
 
-type RemoveRay<E> = E extends rx.Observable<Ray<any, infer P>>
+type RemoveRay<E> = E extends rx.Observable<Action<any, infer P>>
   ? rx.Observable<P>
   : never;
-export function branches<E1 extends Effect<any, any>, R extends AnyEffect>(
+function branches<E1 extends Effect<any, any>, R extends AnyEffect>(
   es: [E1],
   f: (os: [RemoveRay<E1['value']>]) => R,
 ): R;
-export function branches<
+function branches<
   E1 extends Effect<any, any>,
   E2 extends Effect<any, any>,
   R extends AnyEffect
@@ -71,7 +71,7 @@ export function branches<
   es: [E1, E2],
   f: (os: [RemoveRay<E1['value']>, RemoveRay<E2['value']>]) => R,
 ): R;
-export function branches<
+function branches<
   E1 extends Effect<any, any>,
   E2 extends Effect<any, any>,
   E3 extends Effect<any, any>,
@@ -86,7 +86,7 @@ export function branches<
     ],
   ) => R,
 ): R;
-export function branches<
+function branches<
   E1 extends Effect<any, any>,
   E2 extends Effect<any, any>,
   E3 extends Effect<any, any>,
@@ -103,7 +103,7 @@ export function branches<
     ],
   ) => R,
 ): R;
-export function branches<
+function branches<
   E1 extends Effect<any, any>,
   E2 extends Effect<any, any>,
   E3 extends Effect<any, any>,
@@ -122,7 +122,7 @@ export function branches<
     ],
   ) => R,
 ): R;
-export function branches<
+function branches<
   E1 extends Effect<any, any>,
   E2 extends Effect<any, any>,
   E3 extends Effect<any, any>,
@@ -143,10 +143,7 @@ export function branches<
     ],
   ) => R,
 ): R;
-export function branches(
-  es: Effect<any, any>[],
-  f: (os: any) => Effect<any, any>,
-) {
+function branches(es: Effect<any, any>[], f: (os: any) => Effect<any, any>) {
   return pipe(
     es,
     array.map((e) =>
@@ -160,12 +157,12 @@ export function branches(
 }
 
 type PartialEffect<A> = <T>(tag: T) => Effect<T, A>;
-export const partial = <A>(f: (a: A) => void) => (
+const partial = <A>(f: (a: A) => void) => (
   o: rx.Observable<A>,
 ): PartialEffect<A> => <T>(tag: T): Effect<T, A> => ({
   type: 'effect',
   tag,
-  value: pipe(o, rxo.map(ray.create(tag))),
+  value: pipe(o, rxo.map(action.create(tag))),
   effect: f,
 });
 
@@ -176,10 +173,19 @@ export type ApplyTags<B extends Record<string, PartialEffect<any>>> = {
   [key in keyof B]: Effect<key, EffectPayload<ReturnType<B[key]>>>;
 };
 
-export const tagObject = <A extends Record<string, PartialEffect<any>>>(
+const tagObject = <A extends Record<string, PartialEffect<any>>>(
   a: A,
 ): Compute<ApplyTags<A>> =>
   pipe(
     a,
     record.mapWithIndex((key, value) => value(key)),
   ) as any;
+
+export const effect = {
+  branch,
+  branches,
+  tag,
+  transform,
+  partial,
+  tagObject,
+};

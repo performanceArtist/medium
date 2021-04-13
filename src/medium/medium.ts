@@ -1,18 +1,14 @@
-import { Selector, selector } from '@performance-artist/fp-ts-adt';
+import { selector } from '@performance-artist/fp-ts-adt';
 import { AllKeys } from '@performance-artist/fp-ts-adt/dist/utils';
 import { pipe } from 'fp-ts/lib/pipeable';
 import { Compute } from '../utils';
-import { Carrier, map as carrierMap } from '../carrier/carrier';
+import { map as carrierMap } from '../carrier/carrier';
 import { merge } from '../carrier/merge';
 import { flow } from 'fp-ts/lib/function';
 import { EffectTree } from '../effect/effect';
 import { combine } from './combine';
-import { Ray } from 'ray/ray';
-
-export type Medium<E, A> = Selector<E, Carrier<E, A>>;
-export type AnyMedium = Medium<{}, EffectTree>;
-export type MediumValue<E> = E extends Medium<any, infer A> ? A : never;
-export type MediumDeps<E> = E extends Medium<infer E, any> ? E : never;
+import { Action } from '../action/action';
+import { Medium, MediumDeps, MediumValue } from './types';
 
 export const id = <D extends Record<string, any>>() => <
   K extends keyof D = never
@@ -56,7 +52,7 @@ export const decorateWith = <V extends EffectTree>() => <
 
 export const decorateAny = decorateWith<EffectTree>();
 
-export const subscribeWith = (onEmit: (action: Ray<string, any>) => void) =>
+export const subscribeWith = (onEmit: (action: Action<string, any>) => void) =>
   flow(merge, (output$) => output$.subscribe(onEmit));
 
 export const subscribe = subscribeWith(() => {});

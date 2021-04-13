@@ -1,8 +1,8 @@
 import { behavior, Behavior } from '@performance-artist/rx-utils';
 import { merge, ObservableValue } from '../carrier/merge';
-import { Medium } from './medium';
-import { ray } from '../ray';
-import { Ray } from '../ray/ray';
+import { Medium } from './types';
+import { action } from '../action';
+import { Action } from '../action/action';
 import { pipe } from 'fp-ts/lib/pipeable';
 import { array, option, record } from 'fp-ts';
 import { EffectTree } from '../effect/effect';
@@ -36,7 +36,7 @@ export const withMedium = <E, A extends EffectTree>(medium: Medium<E, A>) => (
       >['payload']
     >(
       payload: P,
-    ) => Ray<T, P>,
+    ) => Action<T, P>,
   ) => void,
 ) => () => {
   const history = makeHistory([] as ObservableValue<A[keyof A]['value']>[]);
@@ -56,7 +56,7 @@ export const withMedium = <E, A extends EffectTree>(medium: Medium<E, A>) => (
       history.concat(e as ObservableValue<A[keyof A]['value']>),
     );
   });
-  test(deps, history, ray.create);
+  test(deps, history, action.create);
   input.unsubscribe();
   output.unsubscribe();
 };

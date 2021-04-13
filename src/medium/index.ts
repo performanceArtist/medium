@@ -32,3 +32,5 @@ export const test = {
   unorderedEqual,
   unorderedEqualStrict,
 };
+
+export * from './types';
