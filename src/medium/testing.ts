@@ -7,7 +7,7 @@ import { pipe } from 'fp-ts/lib/pipeable';
 import { array, option, record } from 'fp-ts';
 import { EffectTree } from '../effect/effect';
 import { source } from '../source';
-import { subscription } from '@performance-artist/fp-ts-adt/dist/subscription';
+import { subscription } from '@performance-artist/fp-ts-adt';
 
 export type History<A> = Behavior<A> & { take: () => A };
 
@@ -49,7 +49,7 @@ export const withMedium = <E, A extends EffectTree>(medium: Medium<E, A>) => (
     record.filter(source.isSource),
     record.toArray,
     array.map(([_, s]) => source.subscribe(s)),
-    (e) => subscription.sequence(...e),
+    subscription.sequence,
   );
   const output = output$.subscribe((e) => {
     history.modify((history) =>
