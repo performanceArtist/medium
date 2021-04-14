@@ -1,13 +1,13 @@
 import {
   id,
-  map,
   run,
   subscribe,
   subscribeWith,
   decorateWith,
   decorateAny,
+  mergeInputs,
+  applyEffects,
 } from './medium';
-import { combine } from './combine';
 import {
   withMedium,
   makeHistory,
@@ -17,13 +17,13 @@ import {
 
 export const medium = {
   id,
-  map,
-  combine,
   run,
   subscribe,
   subscribeWith,
   decorateWith,
   decorateAny,
+  mergeInputs,
+  applyEffects,
 };
 
 export const test = {

@@ -3,7 +3,7 @@ import { identity } from 'fp-ts/lib/function';
 import { pipe } from 'fp-ts/lib/pipeable';
 import * as rx from 'rxjs';
 import * as rxo from 'rxjs/operators';
-import { carrier, medium, effect } from '../../src';
+import { medium, effect } from '../../src';
 
 // Consider this case: we want to start an app tour(and run its effects) only in case this is the user's first login.
 
@@ -13,13 +13,19 @@ type TourMediumDeps = {
   };
 };
 
-const tourMedium = medium.map(medium.id<TourMediumDeps>()('tour'), (deps) => {
-  const { tour } = deps;
+const tourMedium = pipe(
+  selector.keys<TourMediumDeps>()('tour'),
+  selector.map((deps) => {
+    const { tour } = deps;
 
-  const setIsOpen = pipe(rx.of(true), effect.tag('setIsOpen', tour.setIsOpen));
+    const setIsOpen = pipe(
+      rx.of(true),
+      effect.tag('setIsOpen', tour.setIsOpen),
+    );
 
-  return { setIsOpen };
-});
+    return { setIsOpen };
+  }),
+);
 
 type UserInfo = {
   isFirstLogin$: rx.Observable<boolean>;
@@ -29,9 +35,9 @@ type EnvMediumDeps = {
   userInfo: UserInfo;
 };
 
-export const tourEnvMedium = medium.map(
-  medium.combine(tourMedium, medium.id<EnvMediumDeps>()('userInfo')),
-  (deps, [tourMedium]) => {
+export const tourEnvMedium = pipe(
+  selector.combine(tourMedium, selector.keys<EnvMediumDeps>()('userInfo')),
+  selector.map(([tourMedium, deps]) => {
     const { userInfo } = deps;
 
     // "transform" allows to modify the effect's input stream,
@@ -50,7 +56,7 @@ export const tourEnvMedium = medium.map(
     return {
       setIsOpen,
     };
-  },
+  }),
 );
 
 // EXPERIMENTAL
@@ -58,9 +64,9 @@ export const tourEnvMedium = medium.map(
 // What if we need a symbol(currency pair) to start a tour?
 // We want to make sure we can "point" to that symbol with tour, otherwise tour should not start.
 
-const tourSymbolMedium = medium.map(
-  medium.combine(tourMedium, medium.id<{ symbol: string }>()('symbol')),
-  (deps, [value]) => value,
+const tourSymbolMedium = pipe(
+  selector.combine(tourMedium, selector.keys<{ symbol: string }>()('symbol')),
+  selector.map(([value]) => value),
 );
 
 type EnvMediumSymbolDeps = EnvMediumDeps & {
@@ -76,29 +82,27 @@ type EnvMediumSymbolDeps = EnvMediumDeps & {
 export const tourSymbolEnvMedium = pipe(
   selector.combine(
     selector.defer(tourSymbolMedium, 'symbol'),
-    medium.id<EnvMediumSymbolDeps>()('userInfo', 'symbolProvider'),
+    selector.keys<EnvMediumSymbolDeps>()('userInfo', 'symbolProvider'),
   ),
-  selector.map(([tourMedium, envMedium]) =>
-    carrier.map(envMedium, (deps) => {
-      const { userInfo, symbolProvider } = deps;
+  selector.map(([tourMedium, deps]) => {
+    const { userInfo, symbolProvider } = deps;
 
-      const tour = pipe(
-        rx.combineLatest([userInfo.isFirstLogin$, symbolProvider.symbol$]),
-        rxo.filter(([isFirstLogin]) => isFirstLogin),
-        rxo.switchMap(([_, symbol]) =>
-          pipe(
-            tourMedium.run({
-              symbol,
-            }),
-            carrier.merge,
-          ),
+    const tour = pipe(
+      rx.combineLatest([userInfo.isFirstLogin$, symbolProvider.symbol$]),
+      rxo.filter(([isFirstLogin]) => isFirstLogin),
+      rxo.switchMap(([_, symbol]) =>
+        pipe(
+          tourMedium.run({
+            symbol,
+          }),
+          medium.applyEffects,
         ),
-        effect.tag('tour', () => {}),
-      );
+      ),
+      effect.tag('tour', () => {}),
+    );
 
-      return {
-        tour,
-      };
-    }),
-  ),
+    return {
+      tour,
+    };
+  }),
 );

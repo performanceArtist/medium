@@ -6,14 +6,15 @@ import * as rx from 'rxjs';
 import { option } from 'fp-ts';
 import { makeTodoApi } from '../basic/todo.api';
 import { makeTodoSource } from '../basic/todo.source';
+import { selector } from '@performance-artist/fp-ts-adt';
 
 export type ReportDeps = {
   logger: (info: string) => void;
 };
 
-export const withReports = medium.map(
-  medium.combine(todoMedium, medium.id<ReportDeps>()('logger')),
-  (deps, [todoMedium]) => {
+export const withReports = pipe(
+  selector.combine(todoMedium, selector.keys<ReportDeps>()('logger')),
+  selector.askMap(([deps, [todoMedium]]) => {
     const { todoSource, logger } = deps;
 
     // creates a new Effect, using an observable from another Effect
@@ -46,7 +47,7 @@ export const withReports = medium.map(
       errorReport,
       updateReport,
     };
-  },
+  }),
 );
 
 const subscription = pipe(

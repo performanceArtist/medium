@@ -30,11 +30,11 @@
   "peerDependencies": {
     "fp-ts": "^2.8.2",
     "rxjs": "^6.6.3",
-    "@performance-artist/fp-ts-adt": "^1.0.11",
+    "@performance-artist/fp-ts-adt": "^1.0.16",
     "@performance-artist/rx-utils": "^1.0.3"
   },
   "devDependencies": {
-    "@performance-artist/fp-ts-adt": "^1.0.14",
+    "@performance-artist/fp-ts-adt": "^1.0.16",
     "@performance-artist/rx-utils": "^1.0.3",
     "@types/node": "^12.12.55",
     "fp-ts": "^2.8.2",

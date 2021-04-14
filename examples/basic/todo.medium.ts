@@ -5,19 +5,16 @@ import { array, option } from 'fp-ts';
 import { makeTodoSource, TodoSource } from './todo.source';
 import { TodoApi, makeTodoApi } from './todo.api';
 import { flow } from 'fp-ts/lib/function';
+import { selector } from '@performance-artist/fp-ts-adt';
 
 export type TodoDeps = {
   todoApi: TodoApi;
   todoSource: TodoSource;
 };
 
-export const todoMedium = medium.map(
-  // Creates a minimal medium value(similar to Applicative's of).
-  // Keys('todoApi', 'todoSource') are a memoization measure - this ensures
-  // that regardless of an object passed to Medium, it will only recreate itself when
-  // the values at the aforementioned keys have changed.
-  medium.id<TodoDeps>()('todoApi', 'todoSource'),
-  (deps) => {
+export const todoMedium = pipe(
+  selector.keys<TodoDeps>()('todoApi', 'todoSource'),
+  selector.map((deps) => {
     const { todoApi, todoSource } = deps;
 
     const setTodos = pipe(
@@ -57,7 +54,7 @@ export const todoMedium = medium.map(
       setTodos,
       updateTodo,
     };
-  },
+  }),
 );
 
 // Should be done on component initialization.

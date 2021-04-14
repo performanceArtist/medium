@@ -1,5 +1,5 @@
 import { pipe } from 'fp-ts/lib/pipeable';
-import { carrier, effect, medium } from '../../src';
+import { effect, medium } from '../../src';
 import * as rxo from 'rxjs/operators';
 import { todoMedium } from '../basic/todo.medium';
 
@@ -10,7 +10,7 @@ type WithLoggerDeps = {
 const withLogger = medium.decorateAny(medium.id<WithLoggerDeps>()('log'))(
   (deps, [_, effects]) => {
     const log = pipe(
-      carrier.mergeInputs(effects),
+      medium.mergeInputs(effects),
       rxo.map(({ type, payload }) => ({
         type: String(type),
         payload: JSON.stringify(payload),

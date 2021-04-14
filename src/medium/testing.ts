@@ -1,6 +1,5 @@
 import { behavior, Behavior } from '@performance-artist/rx-utils';
-import { merge, ObservableValue } from '../carrier/merge';
-import { Medium } from './types';
+import { Medium, ObservableValue } from './types';
 import { action } from '../action';
 import { Action } from '../action/action';
 import { pipe } from 'fp-ts/lib/pipeable';
@@ -8,6 +7,7 @@ import { array, option, record } from 'fp-ts';
 import { EffectTree } from '../effect/effect';
 import { source } from '../source';
 import { subscription } from '@performance-artist/fp-ts-adt';
+import { applyEffects } from './medium';
 
 export type History<A> = Behavior<A> & { take: () => A };
 
@@ -42,7 +42,7 @@ export const withMedium = <E, A extends EffectTree>(medium: Medium<E, A>) => (
   const history = makeHistory([] as ObservableValue<A[keyof A]['value']>[]);
   const deps = makeDeps();
   const resolved = medium.run(deps);
-  const output$ = merge(resolved);
+  const output$ = applyEffects(resolved);
 
   const input = pipe(
     deps,
